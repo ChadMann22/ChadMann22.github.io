@@ -3,1060 +3,560 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Pi — Home Network DNS Gateway | Portfolio</title>
+<title>Chad Mann — IT & Systems Administration</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg: #0b0e13;
-    --bg2: #111520;
-    --bg3: #161b26;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --accent: #00d4aa;
-    --accent2: #0099ff;
-    --accent-dim: rgba(0,212,170,0.12);
-    --text: #e8eaf0;
-    --text2: #8b92a8;
-    --text3: #555e72;
-    --red: #ff4d6a;
-    --amber: #f5a623;
-    --green: #00d4aa;
-    --mono: 'JetBrains Mono', monospace;
-    --sans: 'DM Sans', sans-serif;
-    --display: 'Syne', sans-serif;
-  }
+:root {
+  --bg:        #f7f8f9;
+  --surface:   #ffffff;
+  --border:    #dde1e7;
+  --border-lt: #eef0f3;
+  --text:      #141b27;
+  --text2:     #4b5563;
+  --text3:     #94a3b8;
+  --green:     #2a7f62;
+  --green-dim: rgba(42,127,98,0.09);
+  --green-lt:  #f0f9f5;
+  --blue:      #2f5fa3;
+  --blue-dim:  rgba(47,95,163,0.08);
+  --mono: 'JetBrains Mono', monospace;
+  --body: 'Onest', sans-serif;
+  --display: 'Bricolage Grotesque', sans-serif;
+}
 
-  html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 16px;
-    line-height: 1.7;
-    -webkit-font-smoothing: antialiased;
-  }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
 
-  /* LAYOUT */
-  .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+/* ─── NAV ─── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,248,249,0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+}
+.nav-inner {
+  max-width: 1080px; margin: 0 auto; padding: 0 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+}
+.nav-name {
+  font-family: var(--display);
+  font-size: 15px; font-weight: 500;
+  color: var(--text); text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.nav-right { display: flex; align-items: center; gap: 2rem; }
+.nav-link {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); text-decoration: none;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  transition: color 0.15s;
+}
+.nav-link:hover { color: var(--green); }
+.nav-github {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text2); text-decoration: none;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 6px 14px; border-radius: 4px;
+  letter-spacing: 0.04em;
+  transition: border-color 0.15s, color 0.15s;
+}
+.nav-github:hover { border-color: var(--green); color: var(--green); }
 
-  /* NAV */
-  nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(11,14,19,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0.9rem 0;
-  }
-  nav .inner {
-    max-width: 900px; margin: 0 auto; padding: 0 2rem;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .nav-logo {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-  }
-  .nav-links { display: flex; gap: 1.5rem; list-style: none; }
-  .nav-links a {
-    font-size: 13px; color: var(--text2); text-decoration: none;
-    font-family: var(--sans); letter-spacing: 0.02em;
-    transition: color 0.2s;
-  }
-  .nav-links a:hover { color: var(--accent); }
+/* ─── LAYOUT ─── */
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 2.5rem; }
 
-  /* HERO */
-  .hero {
-    padding: 5rem 0 4rem;
-    border-bottom: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute; top: -80px; right: -120px;
-    width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(0,212,170,0.06) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-tag {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-family: var(--mono); font-size: 11px;
-    color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase;
-    background: var(--accent-dim);
-    padding: 4px 10px; border-radius: 4px;
-    margin-bottom: 1.5rem;
-  }
-  .hero-tag::before { content: '▶'; font-size: 8px; }
-  h1 {
-    font-family: var(--display);
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    color: #fff;
-    margin-bottom: 1.25rem;
-  }
-  .hero-sub {
-    font-size: 1.1rem;
-    color: var(--text2);
-    max-width: 620px;
-    line-height: 1.75;
-    margin-bottom: 2rem;
-  }
-  .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2.5rem; }
-  .badge {
-    font-family: var(--mono); font-size: 11px;
-    padding: 4px 10px; border-radius: 4px;
-    border: 1px solid;
-  }
-  .badge-teal { color: var(--accent); border-color: rgba(0,212,170,0.3); background: rgba(0,212,170,0.06); }
-  .badge-blue { color: #60a5fa; border-color: rgba(96,165,250,0.3); background: rgba(96,165,250,0.06); }
-  .badge-amber { color: var(--amber); border-color: rgba(245,166,35,0.3); background: rgba(245,166,35,0.06); }
-  .badge-gray { color: var(--text2); border-color: var(--border2); background: rgba(255,255,255,0.03); }
+/* ─── HERO ─── */
+.hero {
+  padding: 7rem 0 6rem;
+  border-bottom: 1px solid var(--border);
+}
+.hero-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--green); letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+.hero-label::before {
+  content: '';
+  width: 20px; height: 1px;
+  background: var(--green);
+}
+.hero-name {
+  font-family: var(--display);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 300;
+  line-height: 1.0;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  margin-bottom: 0.2em;
+}
+.hero-name strong { font-weight: 600; }
+.hero-role {
+  font-family: var(--display);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  font-weight: 300;
+  color: var(--text3);
+  margin-bottom: 2.5rem;
+  letter-spacing: -0.02em;
+}
+.hero-bio {
+  font-size: 1.05rem;
+  color: var(--text2);
+  max-width: 540px;
+  line-height: 1.75;
+  font-weight: 300;
+  margin-bottom: 3rem;
+}
+.hero-pills {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.pill {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text2); letter-spacing: 0.04em;
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 5px 12px; border-radius: 3px;
+}
 
-  .meta-row {
-    display: flex; gap: 2rem; flex-wrap: wrap;
-    padding-top: 1.5rem; border-top: 1px solid var(--border);
-  }
-  .meta-item { }
-  .meta-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--mono); margin-bottom: 3px; }
-  .meta-value { font-size: 14px; color: var(--text); }
+/* ─── SECTION ─── */
+.section { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+.section:last-of-type { border-bottom: none; }
 
-  /* SECTIONS */
-  section { padding: 4rem 0; border-bottom: 1px solid var(--border); }
-  section:last-child { border-bottom: none; }
+.section-head {
+  display: flex; align-items: baseline; gap: 1.25rem;
+  margin-bottom: 3rem;
+}
+.section-num {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+.section-title {
+  font-family: var(--display);
+  font-size: 1.75rem; font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
 
-  .section-label {
-    font-family: var(--mono); font-size: 11px;
-    color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;
-    margin-bottom: 0.5rem;
-  }
-  h2 {
-    font-family: var(--display);
-    font-size: 1.6rem; font-weight: 600;
-    letter-spacing: -0.02em; color: #fff;
-    margin-bottom: 1.5rem;
-  }
-  h3 {
-    font-family: var(--display);
-    font-size: 1rem; font-weight: 600;
-    color: #fff; margin-bottom: 0.5rem;
-  }
-  p { color: var(--text2); margin-bottom: 1rem; }
-  p:last-child { margin-bottom: 0; }
+/* ─── PROJECT LIST ─── */
+.project-list { display: flex; flex-direction: column; }
 
-  /* ARCHITECTURE */
-  .arch {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
-    margin: 2rem 0;
-  }
-  .arch-title {
-    font-family: var(--mono); font-size: 11px; color: var(--text3);
-    text-transform: uppercase; letter-spacing: 0.1em;
-    margin-bottom: 1.5rem; text-align: center;
-  }
-  .arch-stack {
-    display: flex; flex-direction: column; align-items: center; gap: 0;
-  }
-  .arch-node {
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--bg3); border: 1px solid var(--border2);
-    border-radius: 8px; padding: 0.75rem 1.25rem;
-    width: 100%; max-width: 420px;
-  }
-  .arch-node.accent-node { border-color: rgba(0,212,170,0.4); background: rgba(0,212,170,0.05); }
-  .arch-node-left { display: flex; align-items: center; gap: 10px; }
-  .arch-node-icon {
-    width: 28px; height: 28px; border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-  }
-  .icon-green { background: rgba(0,212,170,0.15); }
-  .icon-blue { background: rgba(96,165,250,0.15); }
-  .icon-amber { background: rgba(245,166,35,0.15); }
-  .icon-gray { background: rgba(255,255,255,0.06); }
-  .arch-node-name { font-family: var(--mono); font-size: 13px; color: var(--text); }
-  .arch-node-desc { font-size: 11px; color: var(--text3); font-family: var(--sans); }
-  .arch-node-badge {
-    font-family: var(--mono); font-size: 10px;
-    color: var(--accent); background: var(--accent-dim);
-    padding: 2px 7px; border-radius: 3px;
-  }
-  .arch-arrow {
-    width: 1px; height: 24px;
-    background: linear-gradient(to bottom, var(--border2), var(--accent));
-    margin: 0 auto;
-    position: relative;
-  }
-  .arch-arrow::after {
-    content: '';
-    position: absolute; bottom: -4px; left: 50%;
-    transform: translateX(-50%);
-    width: 0; height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid var(--accent);
-  }
+.project-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  padding: 2.25rem 0;
+  border-top: 1px solid var(--border-lt);
+  text-decoration: none;
+  gap: 2rem;
+  transition: background 0.15s;
+}
+.project-row:last-child { border-bottom: 1px solid var(--border-lt); }
+.project-row:hover { background: var(--green-lt); margin: 0 -2.5rem; padding-left: 2.5rem; padding-right: 2.5rem; }
 
-  /* PHASES */
-  .phase-grid { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
-  .phase-card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 10px; overflow: hidden;
-  }
-  .phase-header {
-    display: flex; align-items: center; gap: 1rem;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-    user-select: none;
-  }
-  .phase-header:hover { background: rgba(255,255,255,0.02); }
-  .phase-num {
-    font-family: var(--mono); font-size: 11px;
-    color: var(--text3); min-width: 52px;
-  }
-  .phase-title { font-family: var(--display); font-size: 0.95rem; font-weight: 600; color: var(--text); flex: 1; }
-  .phase-status {
-    font-family: var(--mono); font-size: 10px;
-    padding: 2px 8px; border-radius: 3px;
-  }
-  .status-complete { color: var(--accent); background: var(--accent-dim); }
-  .phase-chevron { color: var(--text3); font-size: 12px; transition: transform 0.2s; }
-  .phase-card.open .phase-chevron { transform: rotate(180deg); }
-  .phase-body { display: none; padding: 1.25rem; }
-  .phase-card.open .phase-body { display: block; }
-  .phase-body p { font-size: 14px; margin-bottom: 1rem; }
-  .phase-highlights {
-    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem;
-  }
-  .highlight-chip {
-    font-size: 12px; color: var(--text2);
-    background: var(--bg3); border: 1px solid var(--border);
-    padding: 3px 10px; border-radius: 4px;
-  }
+.proj-left { }
+.proj-meta {
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+.proj-type {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--green); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.proj-status {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px; color: var(--text3);
+}
+.status-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--green);
+  animation: blink 2.5s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.proj-name {
+  font-family: var(--display);
+  font-size: 1.35rem; font-weight: 500;
+  color: var(--text); letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+.proj-desc {
+  font-size: 14px; color: var(--text2);
+  max-width: 560px; line-height: 1.65;
+  font-weight: 300; margin-bottom: 1rem;
+}
+.proj-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--text3); letter-spacing: 0.04em;
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 3px 8px; border-radius: 2px;
+}
+.proj-right {
+  display: flex; align-items: flex-start;
+  padding-top: 4px;
+}
+.proj-arrow {
+  font-family: var(--mono); font-size: 12px;
+  color: var(--text3); white-space: nowrap;
+  display: flex; align-items: center; gap: 4px;
+  transition: color 0.15s, gap 0.15s;
+}
+.project-row:hover .proj-arrow { color: var(--green); gap: 8px; }
 
-  /* CODE BLOCKS */
-  .code-block {
-    background: #0d1117; border: 1px solid var(--border);
-    border-radius: 8px; overflow-x: auto;
-    margin: 1rem 0;
-  }
-  .code-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--border);
-    background: rgba(255,255,255,0.02);
-  }
-  .code-lang { font-family: var(--mono); font-size: 11px; color: var(--text3); }
-  .code-dots { display: flex; gap: 5px; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; }
-  .dot-r { background: #ff5f56; }
-  .dot-y { background: #ffbd2e; }
-  .dot-g { background: #27c93f; }
-  pre {
-    padding: 1rem;
-    font-family: var(--mono); font-size: 12.5px; line-height: 1.65;
-    color: #a9b1d6; white-space: pre; overflow-x: auto;
-  }
-  .kw { color: #bb9af7; }
-  .str { color: #9ece6a; }
-  .cm { color: #565f89; }
-  .ip { color: #7dcfff; }
-  .cmd { color: #e0af68; }
+/* SOON CARD */
+.project-row.soon {
+  opacity: 0.45; pointer-events: none; cursor: default;
+}
 
-  /* SCREENSHOTS */
-  .screenshot-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem; margin-top: 1.5rem;
-  }
-  .screenshot-slot {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 10px; overflow: hidden;
-  }
-  .screenshot-slot img {
-    width: 100%; display: block;
-    border-bottom: 1px solid var(--border);
-  }
-  .screenshot-placeholder {
-    height: 160px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 8px;
-    background: var(--bg3);
-    border-bottom: 1px solid var(--border);
-    border-style: dashed;
-  }
-  .screenshot-placeholder-icon { font-size: 24px; opacity: 0.3; }
-  .screenshot-placeholder-text { font-size: 11px; color: var(--text3); font-family: var(--mono); }
-  .screenshot-caption { padding: 0.75rem 1rem; }
-  .screenshot-caption-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
-  .screenshot-caption-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+/* ─── SKILLS ─── */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+.skill-block {
+  background: var(--surface);
+  padding: 1.75rem 2rem;
+}
+.skill-block-label {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--green); text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.skill-block-label::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: var(--border);
+}
+.skill-block ul { list-style: none; }
+.skill-block ul li {
+  font-size: 13px; color: var(--text2);
+  padding: 5px 0; border-bottom: 1px solid var(--border-lt);
+  font-weight: 300;
+  display: flex; align-items: center; gap: 10px;
+}
+.skill-block ul li:last-child { border-bottom: none; }
+.skill-block ul li::before {
+  content: '–';
+  color: var(--text3);
+  font-family: var(--mono);
+  font-size: 10px;
+}
 
-  /* RESULTS */
-  .results-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem; margin-top: 1.5rem;
-  }
-  .result-card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 1.25rem;
-  }
-  .result-card.highlight { border-color: rgba(0,212,170,0.3); background: rgba(0,212,170,0.04); }
-  .result-icon { font-size: 1.2rem; margin-bottom: 0.5rem; }
-  .result-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
-  .result-desc { font-size: 12px; color: var(--text3); line-height: 1.5; }
+/* ─── ABOUT ─── */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 4rem;
+  align-items: start;
+}
+@media (max-width: 680px) { .about-grid { grid-template-columns: 1fr; gap: 2rem; } }
 
-  /* SKILLS */
-  .skills-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem; margin-top: 1.5rem;
-  }
-  .skill-group {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 1.25rem;
-  }
-  .skill-group-title {
-    font-family: var(--mono); font-size: 11px; color: var(--accent);
-    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
-  }
-  .skill-list { list-style: none; }
-  .skill-list li {
-    font-size: 13px; color: var(--text2);
-    padding: 4px 0; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 8px;
-  }
-  .skill-list li:last-child { border-bottom: none; }
-  .skill-list li::before {
-    content: ''; width: 4px; height: 4px;
-    border-radius: 50%; background: var(--accent);
-    flex-shrink: 0;
-  }
+.about-text p {
+  color: var(--text2); font-size: 15px;
+  line-height: 1.8; font-weight: 300;
+  margin-bottom: 1.25rem;
+}
+.about-text p:last-child { margin-bottom: 0; }
 
-  /* TROUBLESHOOTING */
-  .issue-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem; }
-  .issue-card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 1rem 1.25rem;
-    display: flex; gap: 1rem; align-items: flex-start;
-  }
-  .issue-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    flex-shrink: 0; margin-top: 6px;
-  }
-  .dot-red { background: var(--red); }
-  .dot-amber { background: var(--amber); }
-  .dot-green { background: var(--green); }
-  .issue-content { flex: 1; }
-  .issue-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
-  .issue-desc { font-size: 12px; color: var(--text3); line-height: 1.5; }
-  .issue-resolution {
-    font-family: var(--mono); font-size: 11px; color: var(--accent);
-    margin-top: 4px;
-  }
+.about-aside { }
+.aside-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.aside-block:last-child { margin-bottom: 0; }
+.aside-label {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 0.75rem;
+}
+.aside-value {
+  font-size: 13px; color: var(--text2); font-weight: 400;
+  line-height: 1.6;
+}
+.aside-value a {
+  color: var(--green); text-decoration: none;
+}
+.aside-value a:hover { text-decoration: underline; }
 
-  /* FOOTER */
-  footer {
-    padding: 2.5rem 0;
-    border-top: 1px solid var(--border);
-    text-align: center;
-  }
-  footer p { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+/* ─── FOOTER ─── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2.25rem 0;
+}
+.footer-inner {
+  max-width: 1080px; margin: 0 auto; padding: 0 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-left {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); letter-spacing: 0.04em;
+}
+.footer-left span { color: var(--text2); }
+.footer-right {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3);
+}
 
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+/* ─── RESPONSIVE ─── */
+@media (max-width: 640px) {
+  .wrap { padding: 0 1.5rem; }
+  .nav-inner { padding: 0 1.5rem; }
+  .hero { padding: 4.5rem 0 4rem; }
+  .nav-link { display: none; }
+  .project-row { grid-template-columns: 1fr; }
+  .project-row:hover { margin: 0 -1.5rem; padding-left: 1.5rem; padding-right: 1.5rem; }
+  .proj-right { display: none; }
+  .footer-inner { padding: 0 1.5rem; }
+}
 
-  @media (max-width: 600px) {
-    .meta-row { gap: 1.25rem; }
-    .arch-node { max-width: 100%; }
-    nav .nav-links { display: none; }
-  }
+/* ─── PAGE LOAD ANIMATION ─── */
+.hero-label  { animation: up 0.5s 0.05s both; }
+.hero-name   { animation: up 0.5s 0.12s both; }
+.hero-role   { animation: up 0.5s 0.18s both; }
+.hero-bio    { animation: up 0.5s 0.24s both; }
+.hero-pills  { animation: up 0.5s 0.30s both; }
 
-  .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
-
-  .inline-code {
-    font-family: var(--mono); font-size: 12px;
-    background: rgba(255,255,255,0.06); color: var(--accent);
-    padding: 1px 6px; border-radius: 3px;
-  }
-
-  .callout {
-    background: rgba(0,212,170,0.06); border: 1px solid rgba(0,212,170,0.2);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 8px 8px 0;
-    padding: 0.75rem 1rem; margin: 1rem 0;
-    font-size: 13px; color: var(--text2);
-  }
-
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-  @media (max-width: 580px) { .two-col { grid-template-columns: 1fr; } }
+@keyframes up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="inner">
-    <span class="nav-logo">privacy-pi ~/portfolio</span>
-    <ul class="nav-links">
-      <li><a href="#overview">Overview</a></li>
-      <li><a href="#architecture">Architecture</a></li>
-      <li><a href="#implementation">Implementation</a></li>
-      <li><a href="#troubleshooting">Troubleshooting</a></li>
-      <li><a href="#results">Results</a></li>
-      <li><a href="#skills">Skills</a></li>
-    </ul>
+  <div class="nav-inner">
+    <a class="nav-name" href="/">Chad Mann</a>
+    <div class="nav-right">
+      <a class="nav-link" href="#projects">Projects</a>
+      <a class="nav-link" href="#skills">Skills</a>
+      <a class="nav-link" href="#about">About</a>
+      <a class="nav-github" href="https://github.com/ChadMann22" target="_blank" rel="noopener">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        ChadMann22
+      </a>
+    </div>
   </div>
 </nav>
 
 <!-- HERO -->
 <div class="hero">
-  <div class="container">
-    <div class="hero-tag">Home Lab Project</div>
-    <h1>Privacy Pi<br>Home Network DNS Gateway</h1>
-    <p class="hero-sub">
-      End-to-end design and deployment of a privacy-focused network gateway on a Raspberry Pi 4 — providing network-wide ad blocking, encrypted DNS, local recursive resolution, and mesh VPN remote access for an entire home network.
+  <div class="wrap">
+    <div class="hero-label">Portfolio</div>
+    <div class="hero-name"><strong>Chad</strong> Mann</div>
+    <div class="hero-role">IT &amp; Systems Administration</div>
+    <p class="hero-bio">
+      I build and document infrastructure projects — from planning and architecture 
+      through real troubleshooting to production deployment. Every project here reflects 
+      a system that's actually running.
     </p>
-    <div class="badge-row">
-      <span class="badge badge-teal">Pi-hole</span>
-      <span class="badge badge-teal">Unbound</span>
-      <span class="badge badge-teal">Stubby</span>
-      <span class="badge badge-blue">Tailscale</span>
-      <span class="badge badge-blue">Raspberry Pi 4</span>
-      <span class="badge badge-amber">Debian Linux</span>
-      <span class="badge badge-amber">UFW / iptables</span>
-      <span class="badge badge-gray">DNS-over-TLS</span>
-      <span class="badge badge-gray">DNSSEC</span>
-      <span class="badge badge-gray">Fail2ban</span>
-    </div>
-    <div class="meta-row">
-      <div class="meta-item">
-        <div class="meta-label">Platform</div>
-        <div class="meta-value">Raspberry Pi 4 (Debian Trixie)</div>
-      </div>
-      <div class="meta-item">
-        <div class="meta-label">Type</div>
-        <div class="meta-value">Home Lab / Infrastructure</div>
-      </div>
-      <div class="meta-item">
-        <div class="meta-label">Status</div>
-        <div class="meta-value" style="color: var(--accent);">● Production</div>
-      </div>
-      <div class="meta-item">
-        <div class="meta-label">Scope</div>
-        <div class="meta-value">Full home network</div>
-      </div>
+    <div class="hero-pills">
+      <span class="pill">Linux Administration</span>
+      <span class="pill">Network Security</span>
+      <span class="pill">DNS &amp; Firewall</span>
+      <span class="pill">Raspberry Pi</span>
+      <span class="pill">Bash Scripting</span>
+      <span class="pill">VPN &amp; Remote Access</span>
+      <span class="pill">System Hardening</span>
     </div>
   </div>
 </div>
 
-<!-- OVERVIEW -->
-<section id="overview">
-  <div class="container">
-    <div class="section-label">00 — Overview</div>
-    <h2>Project Summary</h2>
-    <div class="two-col">
-      <div>
-        <p>
-          This project addresses a gap common to most home networks: DNS traffic is unencrypted, unfiltered, and routed through an ISP's resolvers — exposing browsing habits and serving ads to every device on the network.
-        </p>
-        <p>
-          The solution is a dedicated Raspberry Pi 4 acting as a network-wide DNS gateway. Every device on the LAN — phones, TVs, laptops, smart home devices — automatically routes its DNS through the Pi without any per-device configuration.
-        </p>
-      </div>
-      <div>
-        <p>
-          The stack was built in phases, with each layer adding a distinct privacy or security capability: ad blocking, recursive local resolution, DNSSEC validation, DNS-over-TLS encryption, and remote access via mesh VPN.
-        </p>
-        <p>
-          The system is fully automated with weekly updates, config backups, and a login MOTD that surfaces live service status, network info, and quick commands on every SSH session.
-        </p>
-      </div>
+<!-- PROJECTS -->
+<section class="section" id="projects">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <span class="section-title">Projects</span>
     </div>
 
-    <div class="callout">
-      The Pi runs headless on a USB SSD, connected via Ethernet to the router's LAN port. A static IP is assigned at both the OS level and via router DHCP reservation, ensuring the DNS server address never changes.
-    </div>
-  </div>
-</section>
+    <div class="project-list">
 
-<!-- ARCHITECTURE -->
-<section id="architecture">
-  <div class="container">
-    <div class="section-label">01 — Architecture</div>
-    <h2>DNS Stack Design</h2>
-    <p>Each component in the stack has a distinct, non-overlapping role. DNS queries flow through all four layers on every resolution.</p>
-
-    <div class="arch">
-      <div class="arch-title">// DNS query flow — LAN clients to internet</div>
-      <div class="arch-stack">
-
-        <div class="arch-node">
-          <div class="arch-node-left">
-            <div class="arch-node-icon icon-gray">📡</div>
-            <div>
-              <div class="arch-node-name">LAN Devices</div>
-              <div class="arch-node-desc">All home devices, no per-device config</div>
-            </div>
+      <!-- Privacy Pi -->
+      <a class="project-row" href="https://chadmann22.github.io/privacy-pi/" target="_blank" rel="noopener">
+        <div class="proj-left">
+          <div class="proj-meta">
+            <span class="proj-type">Home Lab</span>
+            <span class="proj-status"><span class="status-dot"></span>Production</span>
           </div>
-          <span class="arch-node-badge">port 53</span>
-        </div>
-        <div class="arch-arrow"></div>
-
-        <div class="arch-node accent-node">
-          <div class="arch-node-left">
-            <div class="arch-node-icon icon-green">🛡</div>
-            <div>
-              <div class="arch-node-name">Pi-hole</div>
-              <div class="arch-node-desc">Blocklist filtering — ads, trackers, telemetry</div>
-            </div>
-          </div>
-          <span class="arch-node-badge">DNS filter</span>
-        </div>
-        <div class="arch-arrow"></div>
-
-        <div class="arch-node accent-node">
-          <div class="arch-node-left">
-            <div class="arch-node-icon icon-green">⚙️</div>
-            <div>
-              <div class="arch-node-name">Unbound</div>
-              <div class="arch-node-desc">Local caching + DNSSEC validation</div>
-            </div>
-          </div>
-          <span class="arch-node-badge">port 5335</span>
-        </div>
-        <div class="arch-arrow"></div>
-
-        <div class="arch-node accent-node">
-          <div class="arch-node-left">
-            <div class="arch-node-icon icon-blue">🔒</div>
-            <div>
-              <div class="arch-node-name">Stubby</div>
-              <div class="arch-node-desc">DNS-over-TLS encryption to upstream resolvers</div>
-            </div>
-          </div>
-          <span class="arch-node-badge">port 8053</span>
-        </div>
-        <div class="arch-arrow"></div>
-
-        <div class="arch-node">
-          <div class="arch-node-left">
-            <div class="arch-node-icon icon-amber">🌐</div>
-            <div>
-              <div class="arch-node-name">Cloudflare / Quad9</div>
-              <div class="arch-node-desc">Upstream resolvers — queries arrive encrypted</div>
-            </div>
-          </div>
-          <span class="arch-node-badge">port 853 TLS</span>
-        </div>
-
-      </div>
-    </div>
-
-    <p style="margin-top: 1.5rem;">
-      <strong style="color: var(--text);">Unbound's role shifts in Phase 3.</strong> Initially configured as a local recursive resolver, Unbound is later given a <span class="inline-code">forward-zone</span> directive pointing to Stubby. From that point forward, Unbound acts as a caching and DNSSEC validation layer — handing off actual resolution to Stubby, which encrypts it in transit.
-    </p>
-
-    <div class="divider"></div>
-    <h3>Remote Access</h3>
-    <p>Tailscale provides zero-config mesh VPN access without port forwarding. Remote devices authenticate via Tailscale and connect to the Pi's Tailscale IP, with subnet routing enabled to access the full LAN.</p>
-    <div class="code-block">
-      <div class="code-header">
-        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
-        <span class="code-lang">bash</span>
-      </div>
-      <pre><span class="cm"># Single command — advertise LAN routes, don't override local DNS stack</span>
-<span class="cmd">sudo tailscale up</span> <span class="kw">--advertise-routes</span>=<span class="ip">192.168.0.0/24</span> <span class="kw">--accept-dns</span>=<span class="str">false</span></pre>
-    </div>
-  </div>
-</section>
-
-<!-- IMPLEMENTATION -->
-<section id="implementation">
-  <div class="container">
-    <div class="section-label">02 — Implementation</div>
-    <h2>Phase-by-Phase Deployment</h2>
-    <p>The project was executed in six sequential phases. Click each phase to expand details.</p>
-
-    <div class="phase-grid">
-
-      <!-- PHASE 0 -->
-      <div class="phase-card open">
-        <div class="phase-header" onclick="togglePhase(this)">
-          <span class="phase-num">Phase 0</span>
-          <span class="phase-title">OS Installation & System Hardening</span>
-          <span class="phase-status status-complete">Complete</span>
-          <span class="phase-chevron">▼</span>
-        </div>
-        <div class="phase-body">
-          <p>Flashed Raspberry Pi OS Lite (64-bit) to a USB SSD using Raspberry Pi Imager with SSH pre-enabled. Assigned a static IP on the LAN, configured UFW to restrict inbound access to LAN-only on all ports, and installed Fail2ban for SSH brute force protection.</p>
-          <div class="phase-highlights">
-            <span class="highlight-chip">Static IP via dhcpcd.conf</span>
-            <span class="highlight-chip">UFW — LAN-only rules</span>
-            <span class="highlight-chip">Fail2ban — SSH protection</span>
-            <span class="highlight-chip">Password authentication</span>
-          </div>
-          <div class="code-block">
-            <div class="code-header">
-              <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
-              <span class="code-lang">dhcpcd.conf</span>
-            </div>
-            <pre><span class="cm"># /etc/dhcpcd.conf — static IP assignment</span>
-<span class="kw">interface</span> eth0
-<span class="kw">static</span> ip_address=<span class="ip">[LAN_IP]/24</span>
-<span class="kw">static</span> routers=<span class="ip">[GATEWAY_IP]</span>
-<span class="cm"># Note: set to upstream DNS (1.1.1.1) during install</span>
-<span class="cm"># Changed to 127.0.0.1 after Unbound is verified</span>
-<span class="kw">static</span> domain_name_servers=<span class="ip">127.0.0.1</span></pre>
+          <div class="proj-name">Privacy Pi — Home Network DNS Gateway</div>
+          <p class="proj-desc">
+            End-to-end deployment of a privacy-focused DNS gateway on a Raspberry Pi 4. 
+            Network-wide ad blocking, encrypted DNS-over-TLS, DNSSEC validation, and 
+            mesh VPN remote access — with zero per-device configuration required.
+          </p>
+          <div class="proj-tags">
+            <span class="tag">Pi-hole</span>
+            <span class="tag">Unbound</span>
+            <span class="tag">Stubby</span>
+            <span class="tag">Tailscale</span>
+            <span class="tag">UFW</span>
+            <span class="tag">Debian Linux</span>
+            <span class="tag">DNS-over-TLS</span>
+            <span class="tag">DNSSEC</span>
+            <span class="tag">Monit</span>
+            <span class="tag">Bash</span>
           </div>
         </div>
-      </div>
-
-      <!-- PHASE 1 -->
-      <div class="phase-card">
-        <div class="phase-header" onclick="togglePhase(this)">
-          <span class="phase-num">Phase 1</span>
-          <span class="phase-title">Pi-hole — Network-Wide DNS Filtering</span>
-          <span class="phase-status status-complete">Complete</span>
-          <span class="phase-chevron">▼</span>
+        <div class="proj-right">
+          <span class="proj-arrow">View writeup →</span>
         </div>
-        <div class="phase-body">
-          <p>Installed Pi-hole via the official script. Configured the router's DHCP server to advertise the Pi's IP as the primary DNS server for all LAN clients. This single change redirects all DNS traffic on the network through Pi-hole without touching individual devices.</p>
-          <div class="phase-highlights">
-            <span class="highlight-chip">One-command install</span>
-            <span class="highlight-chip">Router DHCP DNS override</span>
-            <span class="highlight-chip">Web dashboard on port 80</span>
-            <span class="highlight-chip">UFW — port 53 LAN-only</span>
+      </a>
+
+      <!-- Coming soon -->
+      <div class="project-row soon">
+        <div class="proj-left">
+          <div class="proj-meta">
+            <span class="proj-type">Home Lab</span>
+            <span class="proj-status">In progress</span>
           </div>
-          <div class="callout">
-            UFW required explicit rules for port 53 (DNS) and port 80 (dashboard) — not just SSH. The web admin interface would not load until port 80 was opened, even on LAN.
-          </div>
+          <div class="proj-name">Next Project</div>
+          <p class="proj-desc">Documentation and writeup will be posted when complete.</p>
+          <div class="proj-tags"><span class="tag">Coming soon</span></div>
+        </div>
+        <div class="proj-right">
+          <span class="proj-arrow">—</span>
         </div>
       </div>
 
-      <!-- PHASE 2 -->
-      <div class="phase-card">
-        <div class="phase-header" onclick="togglePhase(this)">
-          <span class="phase-num">Phase 2</span>
-          <span class="phase-title">Unbound — Local Recursive Resolver</span>
-          <span class="phase-status status-complete">Complete</span>
-          <span class="phase-chevron">▼</span>
-        </div>
-        <div class="phase-body">
-          <p>Deployed Unbound as a local recursive DNS resolver, eliminating reliance on any third-party resolver for resolution. Pi-hole was pointed at Unbound on port 5335. Root hints were downloaded and DNSSEC validation enabled using Unbound's built-in trust anchor.</p>
-          <div class="phase-highlights">
-            <span class="highlight-chip">Listens on 127.0.0.1:5335</span>
-            <span class="highlight-chip">DNSSEC validation</span>
-            <span class="highlight-chip">QNAME minimisation</span>
-            <span class="highlight-chip">Query caching</span>
-            <span class="highlight-chip">do-not-query-localhost: no</span>
-          </div>
-          <div class="code-block">
-            <div class="code-header">
-              <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
-              <span class="code-lang">unbound.conf</span>
-            </div>
-            <pre><span class="kw">server:</span>
-    interface: <span class="ip">127.0.0.1</span>
-    port: <span class="str">5335</span>
-    do-not-query-localhost: <span class="kw">no</span>   <span class="cm"># required for Stubby forwarding</span>
-    access-control: <span class="ip">127.0.0.1/32</span> allow
-    access-control: <span class="ip">0.0.0.0/0</span>  refuse
-    hide-identity: <span class="kw">yes</span>
-    hide-version: <span class="kw">yes</span>
-    qname-minimisation: <span class="kw">yes</span>
-    harden-dnssec-stripped: <span class="kw">yes</span>
-    prefetch: <span class="kw">yes</span>
-    num-threads: <span class="str">2</span>
-
-<span class="kw">forward-zone:</span>         <span class="cm"># added in Phase 3</span>
-    name: <span class="str">"."</span>
-    forward-addr: <span class="ip">127.0.0.1</span>@<span class="str">8053</span></pre>
-          </div>
-        </div>
-      </div>
-
-      <!-- PHASE 3 -->
-      <div class="phase-card">
-        <div class="phase-header" onclick="togglePhase(this)">
-          <span class="phase-num">Phase 3</span>
-          <span class="phase-title">Stubby — DNS-over-TLS Encryption</span>
-          <span class="phase-status status-complete">Complete</span>
-          <span class="phase-chevron">▼</span>
-        </div>
-        <div class="phase-body">
-          <p>Configured Stubby to listen on port 8053 and forward queries to Cloudflare and Quad9 over TLS port 853 with certificate authentication. A <span class="inline-code">forward-zone</span> was appended to Unbound's config to hand off all resolution to Stubby, completing the encrypted DNS pipeline.</p>
-          <div class="phase-highlights">
-            <span class="highlight-chip">TLS authentication required</span>
-            <span class="highlight-chip">Cloudflare + Quad9 upstreams</span>
-            <span class="highlight-chip">Port 853 encrypted egress</span>
-            <span class="highlight-chip">tls_auth_name cert validation</span>
-          </div>
-          <div class="code-block">
-            <div class="code-header">
-              <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
-              <span class="code-lang">stubby.yml</span>
-            </div>
-            <pre><span class="kw">resolution_type:</span> GETDNS_RESOLUTION_STUB
-<span class="kw">dns_transport_list:</span>
-  - GETDNS_TRANSPORT_TLS
-<span class="kw">tls_authentication:</span> GETDNS_AUTHENTICATION_REQUIRED
-<span class="kw">listen_addresses:</span>
-  - <span class="ip">127.0.0.1</span>@<span class="str">8053</span>
-
-<span class="kw">upstream_recursive_servers:</span>
-  - address_data: <span class="ip">1.1.1.1</span>
-    tls_auth_name: <span class="str">"cloudflare-dns.com"</span>
-  - address_data: <span class="ip">9.9.9.9</span>
-    tls_auth_name: <span class="str">"dns.quad9.net"</span>
-  - address_data: <span class="ip">149.112.112.112</span>
-    tls_auth_name: <span class="str">"dns.quad9.net"</span></pre>
-          </div>
-        </div>
-      </div>
-
-      <!-- PHASE 4 -->
-      <div class="phase-card">
-        <div class="phase-header" onclick="togglePhase(this)">
-          <span class="phase-num">Phase 5</span>
-          <span class="phase-title">Tailscale — Mesh VPN Remote Access</span>
-          <span class="phase-status status-complete">Complete</span>
-          <span class="phase-chevron">▼</span>
-        </div>
-        <div class="phase-body">
-          <p>WireGuard was originally planned as the remote access solution but was set aside due to a Windows client compatibility issue at the time of deployment. Tailscale was selected as a replacement — providing the same secure tunnel capability with significantly simpler setup: no key distribution, no port forwarding, and no static public IP required.</p>
-          <p>IPv4 and IPv6 forwarding were enabled in sysctl, the Tailscale UDP GRO performance optimization was applied and persisted on boot, and subnet route approval was completed in the Tailscale admin console.</p>
-          <div class="phase-highlights">
-            <span class="highlight-chip">No port forwarding required</span>
-            <span class="highlight-chip">Subnet routing for full LAN</span>
-            <span class="highlight-chip">IPv4 + IPv6 forwarding</span>
-            <span class="highlight-chip">UDP GRO optimized</span>
-            <span class="highlight-chip">--accept-dns=false</span>
-          </div>
-          <div class="code-block">
-            <div class="code-header">
-              <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
-              <span class="code-lang">bash</span>
-            </div>
-            <pre><span class="cm"># Enable IP forwarding (IPv4 + IPv6)</span>
-echo <span class="str">"net.ipv4.ip_forward=1"</span> | sudo tee -a /etc/sysctl.conf
-echo <span class="str">"net.ipv6.conf.all.forwarding=1"</span> | sudo tee -a /etc/sysctl.conf
-sudo sysctl -p
-
-<span class="cm"># Persist UDP GRO optimization</span>
-<span class="cm"># /etc/networkd-dispatcher/routable.d/50-tailscale</span>
-ethtool -K eth0 rx-udp-gro-forwarding on rx-gro-list off</pre>
-          </div>
-        </div>
-      </div>
-
-      <!-- PHASE 5 -->
-      <div class="phase-card">
-        <div class="phase-header" onclick="togglePhase(this)">
-          <span class="phase-num">Phase 6</span>
-          <span class="phase-title">Firewall Finalization & Maintenance Automation</span>
-          <span class="phase-status status-complete">Complete</span>
-          <span class="phase-chevron">▼</span>
-        </div>
-        <div class="phase-body">
-          <p>Finalized UFW rules, corrected the default forward policy to ACCEPT (required for both Tailscale subnet routing and any VPN tunnel traffic), and added Tailscale interface rules. Automated maintenance was implemented via three cron jobs and a custom MOTD script.</p>
-          <div class="phase-highlights">
-            <span class="highlight-chip">DEFAULT_FORWARD_POLICY=ACCEPT</span>
-            <span class="highlight-chip">Weekly apt + Pi-hole updates</span>
-            <span class="highlight-chip">Weekly config backups</span>
-            <span class="highlight-chip">Monthly root hints refresh</span>
-            <span class="highlight-chip">Login MOTD with live status</span>
-          </div>
-          <div class="code-block">
-            <div class="code-header">
-              <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
-              <span class="code-lang">crontab</span>
-            </div>
-            <pre><span class="cm"># Weekly updates — Sunday 3AM</span>
-0 3 * * 0 /usr/local/bin/weekly-updates.sh >> /var/log/weekly-updates.log 2>&1
-
-<span class="cm"># Weekly backup — Sunday 4AM</span>
-0 4 * * 0 /usr/local/bin/weekly-backup.sh >> /var/log/weekly-backup.log 2>&1
-
-<span class="cm"># Monthly root hints refresh — 1st of month 5AM</span>
-0 5 1 * * /usr/local/bin/refresh-root-hints.sh >> /var/log/root-hints.log 2>&1</pre>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- SCREENSHOTS -->
-<section id="screenshots">
-  <div class="container">
-    <div class="section-label">03 — Evidence</div>
-    <h2>Screenshots</h2>
-    <p>Key verification steps captured during deployment. Sensitive identifiers have been redacted.</p>
-
-    <div class="screenshot-grid">
-
-      <div class="screenshot-slot">
-        <div class="screenshot-placeholder">
-          <div class="screenshot-placeholder-icon">🖼</div>
-          <div class="screenshot-placeholder-text">INSERT: MOTD on login</div>
-        </div>
-        <div class="screenshot-caption">
-          <div class="screenshot-caption-title">Login MOTD — live service status</div>
-          <div class="screenshot-caption-sub">All four services active on boot</div>
-        </div>
-      </div>
-
-      <div class="screenshot-slot">
-        <div class="screenshot-placeholder">
-          <div class="screenshot-placeholder-icon">🖼</div>
-          <div class="screenshot-placeholder-text">INSERT: tcpdump port 853</div>
-        </div>
-        <div class="screenshot-caption">
-          <div class="screenshot-caption-title">Encrypted DNS verified — port 853</div>
-          <div class="screenshot-caption-sub">TLS connections to Cloudflare + Quad9</div>
-        </div>
-      </div>
-
-      <div class="screenshot-slot">
-        <div class="screenshot-placeholder">
-          <div class="screenshot-placeholder-icon">🖼</div>
-          <div class="screenshot-placeholder-text">INSERT: pi-health output</div>
-        </div>
-        <div class="screenshot-caption">
-          <div class="screenshot-caption-title">Health check — all services active</div>
-          <div class="screenshot-caption-sub">DNSSEC test passing, Tailscale connected</div>
-        </div>
-      </div>
-
-      <div class="screenshot-slot">
-        <div class="screenshot-placeholder">
-          <div class="screenshot-placeholder-icon">🖼</div>
-          <div class="screenshot-placeholder-text">INSERT: tcpdump port 53</div>
-        </div>
-        <div class="screenshot-caption">
-          <div class="screenshot-caption-title">Pi-hole blocking in real time</div>
-          <div class="screenshot-caption-sub">Blocked domains return 0.0.0.0</div>
-        </div>
-      </div>
-
-      <div class="screenshot-slot">
-        <div class="screenshot-placeholder">
-          <div class="screenshot-placeholder-icon">🖼</div>
-          <div class="screenshot-placeholder-text">INSERT: backup output</div>
-        </div>
-        <div class="screenshot-caption">
-          <div class="screenshot-caption-title">Automated backup confirmed</div>
-          <div class="screenshot-caption-sub">Config archive with 30-day retention</div>
-        </div>
-      </div>
-
-      <div class="screenshot-slot">
-        <div class="screenshot-placeholder">
-          <div class="screenshot-placeholder-icon">🖼</div>
-          <div class="screenshot-placeholder-text">INSERT: tailscale status</div>
-        </div>
-        <div class="screenshot-caption">
-          <div class="screenshot-caption-title">Tailscale mesh — devices connected</div>
-          <div class="screenshot-caption-sub">Pi and remote device in same tailnet</div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="callout" style="margin-top: 1.5rem;">
-      <strong style="color: var(--text);">Screenshot redactions:</strong> Tailscale account identifiers, device names, LAN IP addresses, and Tailscale mesh IPs have been replaced with generic placeholders in all screenshots.
-    </div>
-  </div>
-</section>
-
-<!-- TROUBLESHOOTING -->
-<section id="troubleshooting">
-  <div class="container">
-    <div class="section-label">04 — Problem Solving</div>
-    <h2>Troubleshooting Log</h2>
-    <p>Real issues encountered during deployment and how they were diagnosed and resolved.</p>
-
-    <div class="issue-list">
-
-      <div class="issue-card">
-        <div class="issue-dot dot-red"></div>
-        <div class="issue-content">
-          <div class="issue-title">Unbound failed to start after adding forward-zone</div>
-          <div class="issue-desc">Three separate root causes identified via <span class="inline-code">unbound-checkconf</span>: (1) do-not-query-localhost blocking loopback forwarding to Stubby, (2) auto-trust-anchor-file conflicting with a default system config file (<span class="inline-code">root-auto-trust-anchor-file.conf</span>), and (3) resulting corrupt root.key file.</div>
-          <div class="issue-resolution">→ Removed conflicting config file, added do-not-query-localhost: no, deleted corrupt key</div>
-        </div>
-      </div>
-
-      <div class="issue-card">
-        <div class="issue-dot dot-red"></div>
-        <div class="issue-content">
-          <div class="issue-title">Pi-hole web dashboard not loading</div>
-          <div class="issue-desc">UFW was blocking port 80 — the firewall rules only opened ports 22 and 53 during initial setup. The dashboard was silently rejected even on LAN. Confirmed via curl from the Pi itself — port 80 was responding locally but not from LAN clients.</div>
-          <div class="issue-resolution">→ Added UFW rule: allow from 192.168.0.0/24 to any port 80</div>
-        </div>
-      </div>
-
-      <div class="issue-card">
-        <div class="issue-dot dot-amber"></div>
-        <div class="issue-content">
-          <div class="issue-title">Tailscale subnet routing failing silently</div>
-          <div class="issue-desc">Tailscale reported successful connection but subnet routing did not work. Root cause: IP forwarding had not been enabled (was part of the skipped WireGuard phase). Secondary issue: Tailscale requires explicit subnet approval in the admin console — the CLI command alone is insufficient.</div>
-          <div class="issue-resolution">→ Enabled net.ipv4.ip_forward and net.ipv6.conf.all.forwarding in sysctl; approved routes in admin console</div>
-        </div>
-      </div>
-
-      <div class="issue-card">
-        <div class="issue-dot dot-amber"></div>
-        <div class="issue-content">
-          <div class="issue-title">Encrypted DNS not visible on first tcpdump check</div>
-          <div class="issue-desc">Port 853 showed no traffic on initial capture. Unbound's cache was serving all recent queries without hitting Stubby. The check required forcing an uncached lookup to generate fresh upstream traffic.</div>
-          <div class="issue-resolution">→ Used dig against a previously unresolved domain to bypass cache; port 853 traffic confirmed immediately</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- RESULTS -->
-<section id="results">
-  <div class="container">
-    <div class="section-label">05 — Outcomes</div>
-    <h2>Results & Validation</h2>
-
-    <div class="results-grid">
-      <div class="result-card highlight">
-        <div class="result-icon">🔒</div>
-        <div class="result-title">Zero plaintext DNS egress</div>
-        <div class="result-desc">tcpdump on port 53 shows no outbound traffic to internet. All upstream queries exit on port 853 over TLS.</div>
-      </div>
-      <div class="result-card highlight">
-        <div class="result-icon">🛡</div>
-        <div class="result-title">Network-wide ad blocking</div>
-        <div class="result-desc">All home devices — including TVs, phones, and IoT — filtered without individual configuration.</div>
-      </div>
-      <div class="result-card highlight">
-        <div class="result-icon">✅</div>
-        <div class="result-title">DNSSEC validated</div>
-        <div class="result-desc">Confirmed with dig — invalid DNSSEC domains return SERVFAIL, valid domains resolve normally.</div>
-      </div>
-      <div class="result-card">
-        <div class="result-icon">🌐</div>
-        <div class="result-title">Remote access active</div>
-        <div class="result-desc">Tailscale mesh VPN provides access to Pi and full LAN from any device without port forwarding.</div>
-      </div>
-      <div class="result-card">
-        <div class="result-icon">⚙️</div>
-        <div class="result-title">Fully automated maintenance</div>
-        <div class="result-desc">Weekly system updates, Pi-hole blocklist refresh, and config backups with 30-day retention.</div>
-      </div>
-      <div class="result-card">
-        <div class="result-icon">💾</div>
-        <div class="result-title">35% disk utilization</div>
-        <div class="result-desc">Running from USB SSD — significantly better longevity than SD card for a write-active server workload.</div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-    <h3>Verification commands used</h3>
-    <div class="code-block">
-      <div class="code-header">
-        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
-        <span class="code-lang">bash — validation suite</span>
-      </div>
-      <pre><span class="cm"># Confirm no plaintext DNS leaving the machine</span>
-sudo tcpdump -i eth0 -n port 53      <span class="cm"># should show only LAN traffic</span>
-sudo tcpdump -i eth0 -n port 853     <span class="cm"># should show encrypted TLS to upstream</span>
-
-<span class="cm"># DNSSEC validation tests</span>
-dig dnssec-failed.org @127.0.0.1     <span class="cm"># must return SERVFAIL (bad sig)</span>
-dig sigok.verteiltesysteme.net @127.0.0.1  <span class="cm"># must return NOERROR</span>
-
-<span class="cm"># Full stack health check</span>
-sudo /usr/local/bin/pi-health.sh
-
-<span class="cm"># Live query log</span>
-sudo pihole -t</pre>
     </div>
   </div>
 </section>
 
 <!-- SKILLS -->
-<section id="skills">
-  <div class="container">
-    <div class="section-label">06 — Skills Demonstrated</div>
-    <h2>Technical Areas</h2>
-
+<section class="section" id="skills">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <span class="section-title">Technical Skills</span>
+    </div>
     <div class="skills-grid">
-      <div class="skill-group">
-        <div class="skill-group-title">Linux Administration</div>
-        <ul class="skill-list">
-          <li>Debian/Raspberry Pi OS configuration</li>
+      <div class="skill-block">
+        <div class="skill-block-label">Linux</div>
+        <ul>
+          <li>Debian / Raspberry Pi OS</li>
           <li>Systemd service management</li>
-          <li>UFW / iptables firewall rules</li>
-          <li>Cron job scheduling</li>
-          <li>sysctl kernel parameters</li>
-          <li>Shell scripting (bash)</li>
+          <li>UFW / iptables firewall</li>
+          <li>Shell scripting (Bash)</li>
+          <li>Cron &amp; sysctl</li>
+          <li>Log management &amp; rotation</li>
         </ul>
       </div>
-      <div class="skill-group">
-        <div class="skill-group-title">Networking & DNS</div>
-        <ul class="skill-list">
-          <li>DNS stack design and layering</li>
-          <li>DNS-over-TLS (DoT) protocol</li>
-          <li>DNSSEC validation</li>
-          <li>QNAME minimisation</li>
-          <li>Static IP and DHCP configuration</li>
-          <li>Packet capture and analysis</li>
+      <div class="skill-block">
+        <div class="skill-block-label">Networking</div>
+        <ul>
+          <li>DNS stack design &amp; layering</li>
+          <li>DNS-over-TLS / DNSSEC</li>
+          <li>Static IP &amp; DHCP configuration</li>
+          <li>Packet capture &amp; analysis</li>
+          <li>Mesh VPN (Tailscale)</li>
+          <li>Subnet routing</li>
         </ul>
       </div>
-      <div class="skill-group">
-        <div class="skill-group-title">Security</div>
-        <ul class="skill-list">
+      <div class="skill-block">
+        <div class="skill-block-label">Security</div>
+        <ul>
           <li>Network traffic encryption</li>
-          <li>Firewall hardening (LAN-only rules)</li>
-          <li>Brute force mitigation (Fail2ban)</li>
+          <li>Firewall hardening</li>
+          <li>Intrusion detection (Fail2ban)</li>
           <li>Blocklist-based filtering</li>
           <li>ISP DNS leak prevention</li>
-          <li>Attack surface minimization</li>
+          <li>Service monitoring (Monit)</li>
         </ul>
       </div>
-      <div class="skill-group">
-        <div class="skill-group-title">Tools & Technologies</div>
-        <ul class="skill-list">
+      <div class="skill-block">
+        <div class="skill-block-label">Tools</div>
+        <ul>
           <li>Pi-hole, Unbound, Stubby</li>
-          <li>Tailscale mesh VPN</li>
+          <li>Monit, msmtp, ntfy</li>
           <li>tcpdump, dig, nslookup</li>
-          <li>UFW, ethtool, sysctl</li>
-          <li>Fail2ban</li>
           <li>SSH remote administration</li>
+          <li>Git / GitHub Pages</li>
+          <li>Windows &amp; PowerShell</li>
         </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section" id="about">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <span class="section-title">About</span>
+    </div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>
+          I'm focused on building practical IT skills through hands-on home lab projects. 
+          My approach is to take a system from concept to production — then document it 
+          thoroughly: the architecture decisions, the things that broke, and how they 
+          were fixed.
+        </p>
+        <p>
+          The Privacy Pi project reflects that methodology. It started as a simple 
+          Pi-hole installation and expanded through multiple phases into a layered 
+          DNS privacy stack with automated monitoring, alerting, reporting, and 
+          offsite backup — all deployed on a headless Raspberry Pi 4 serving an 
+          entire home network.
+        </p>
+        <p>
+          I'm particularly interested in roles that involve Linux systems administration, 
+          network infrastructure, security hardening, and the operational side of IT.
+        </p>
+      </div>
+      <div class="about-aside">
+        <div class="aside-block">
+          <div class="aside-label">Focus</div>
+          <div class="aside-value">Linux systems administration, network security, infrastructure</div>
+        </div>
+        <div class="aside-block">
+          <div class="aside-label">Primary Platform</div>
+          <div class="aside-value">Raspberry Pi 4 / Debian Linux</div>
+        </div>
+        <div class="aside-block">
+          <div class="aside-label">GitHub</div>
+          <div class="aside-value">
+            <a href="https://github.com/ChadMann22" target="_blank" rel="noopener">github.com/ChadMann22</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="container">
-    <p>privacy-pi — home network dns gateway // portfolio documentation</p>
+  <div class="footer-inner">
+    <div class="footer-left"><span>Chad Mann</span> — chadmann22.github.io</div>
+    <div class="footer-right">systems builder &amp; network tinkerer</div>
   </div>
 </footer>
-
-<script>
-function togglePhase(header) {
-  const card = header.parentElement;
-  card.classList.toggle('open');
-}
-</script>
 
 </body>
 </html>
