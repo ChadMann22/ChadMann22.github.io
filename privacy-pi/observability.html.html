@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Pi — Observability Layer | Chad Mann</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #f7f8f9;
+  --surface:   #ffffff;
+  --border:    #dde1e7;
+  --border-lt: #eef0f3;
+  --text:      #141b27;
+  --text2:     #4b5563;
+  --text3:     #94a3b8;
+  --green:     #2a7f62;
+  --green-dim: rgba(42,127,98,0.08);
+  --green-lt:  #f0f9f5;
+  --blue:      #2f5fa3;
+  --blue-dim:  rgba(47,95,163,0.07);
+  --amber:     #b45309;
+  --amber-dim: rgba(180,83,9,0.07);
+  --red:       #be2f2f;
+  --mono: 'JetBrains Mono', monospace;
+  --body: 'Onest', sans-serif;
+  --display: 'Bricolage Grotesque', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,248,249,0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  max-width: 940px; margin: 0 auto; padding: 0 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+}
+.nav-back {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); text-decoration: none;
+  letter-spacing: 0.06em;
+  display: flex; align-items: center; gap: 6px;
+  transition: color 0.15s;
+}
+.nav-back:hover { color: var(--green); }
+.nav-right { display: flex; gap: 1.5rem; list-style: none; }
+.nav-right a {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); text-decoration: none;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  transition: color 0.15s;
+}
+.nav-right a:hover { color: var(--green); }
+@media (max-width: 640px) { .nav-right { display: none; } }
+
+/* LAYOUT */
+.wrap { max-width: 940px; margin: 0 auto; padding: 0 2.5rem; }
+@media (max-width: 640px) { .wrap { padding: 0 1.5rem; } }
+
+/* HERO */
+.hero { padding: 5rem 0 4rem; border-bottom: 1px solid var(--border); }
+.hero-breadcrumb {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); letter-spacing: 0.06em;
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-breadcrumb a { color: var(--text3); text-decoration: none; }
+.hero-breadcrumb a:hover { color: var(--green); }
+.hero-breadcrumb span { color: var(--border); }
+
+.hero-type {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--green); letter-spacing: 0.1em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 1.25rem;
+}
+.hero-type::before { content: ''; width: 20px; height: 1px; background: var(--green); }
+
+h1 {
+  font-family: var(--display);
+  font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 500;
+  line-height: 1.15; letter-spacing: -0.03em;
+  color: var(--text); margin-bottom: 1.25rem;
+}
+.hero-sub {
+  font-size: 1.05rem; color: var(--text2);
+  max-width: 620px; line-height: 1.75; font-weight: 300;
+  margin-bottom: 2rem;
+}
+.badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2.5rem; }
+.badge {
+  font-family: var(--mono); font-size: 10px;
+  padding: 4px 10px; border-radius: 2px; letter-spacing: 0.04em;
+}
+.badge-green { color: var(--green); background: var(--green-dim); border: 1px solid rgba(42,127,98,0.2); }
+.badge-blue  { color: var(--blue);  background: var(--blue-dim);  border: 1px solid rgba(47,95,163,0.2); }
+.badge-gray  { color: var(--text3); background: var(--surface);   border: 1px solid var(--border); }
+
+.meta-strip {
+  display: flex; gap: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden; flex-wrap: wrap;
+}
+.meta-item { padding: 0.75rem 1.25rem; border-right: 1px solid var(--border); flex: 1; min-width: 120px; }
+.meta-item:last-child { border-right: none; }
+.meta-label { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+.meta-value { font-size: 13px; color: var(--text2); font-weight: 400; }
+.meta-value.live { color: var(--green); font-weight: 500; }
+
+/* SECTIONS */
+section { padding: 4rem 0; border-bottom: 1px solid var(--border); }
+section:last-child { border-bottom: none; }
+.section-label { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+h2 { font-family: var(--display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; color: var(--text); margin-bottom: 1.5rem; }
+h3 { font-family: var(--display); font-size: 1rem; font-weight: 500; color: var(--text); margin-bottom: 0.6rem; }
+p { color: var(--text2); font-weight: 300; margin-bottom: 1rem; }
+p:last-child { margin-bottom: 0; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+@media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+.divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+.inline-code { font-family: var(--mono); font-size: 12px; background: var(--bg); color: var(--green); border: 1px solid var(--border); padding: 1px 6px; }
+
+/* CALLOUTS */
+.callout { background: var(--green-lt); border: 1px solid rgba(42,127,98,0.25); border-left: 3px solid var(--green); padding: 0.85rem 1rem; margin: 1rem 0; font-size: 13px; color: var(--text2); font-weight: 300; }
+.warn-callout { background: #fffbf0; border: 1px solid rgba(180,83,9,0.2); border-left: 3px solid var(--amber); padding: 0.85rem 1rem; margin: 1rem 0; font-size: 13px; color: var(--text2); font-weight: 300; }
+
+/* ARCH */
+.arch { background: var(--surface); border: 1px solid var(--border); padding: 2rem; margin: 2rem 0; }
+.arch-title { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.75rem; text-align: center; }
+.arch-flow { display: flex; flex-direction: column; align-items: center; }
+.arch-node { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border: 1px solid var(--border); padding: 0.85rem 1.25rem; width: 100%; max-width: 460px; }
+.arch-node.accent { border-color: rgba(42,127,98,0.35); background: var(--green-lt); }
+.arch-node-left { display: flex; align-items: center; gap: 10px; }
+.arch-node-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+.arch-node-name { font-family: var(--mono); font-size: 12px; color: var(--text); }
+.arch-node-desc { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.arch-node-badge { font-family: var(--mono); font-size: 10px; color: var(--green); background: var(--green-dim); border: 1px solid rgba(42,127,98,0.2); padding: 2px 7px; }
+.arch-arrow { width: 1px; height: 20px; background: var(--border); margin: 0 auto; position: relative; }
+.arch-arrow::after { content: '▼'; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); font-size: 8px; color: var(--green); }
+
+/* PHASES */
+.phase-grid { display: flex; flex-direction: column; gap: 1px; margin-top: 1.5rem; background: var(--border); border: 1px solid var(--border); }
+.phase-card { background: var(--surface); overflow: hidden; }
+.phase-header { display: flex; align-items: center; gap: 1.25rem; padding: 1.1rem 1.5rem; cursor: pointer; user-select: none; transition: background 0.15s; }
+.phase-header:hover { background: var(--bg); }
+.phase-num { font-family: var(--mono); font-size: 10px; color: var(--text3); min-width: 56px; letter-spacing: 0.06em; }
+.phase-title { font-family: var(--display); font-size: 0.95rem; font-weight: 500; color: var(--text); flex: 1; }
+.phase-status { font-family: var(--mono); font-size: 10px; color: var(--green); background: var(--green-dim); border: 1px solid rgba(42,127,98,0.2); padding: 2px 8px; letter-spacing: 0.04em; }
+.phase-chevron { color: var(--text3); font-size: 10px; transition: transform 0.2s; }
+.phase-card.open .phase-chevron { transform: rotate(180deg); }
+.phase-body { display: none; padding: 1.5rem; border-top: 1px solid var(--border-lt); }
+.phase-card.open .phase-body { display: block; }
+.phase-body p { font-size: 14px; }
+.phase-highlights { display: flex; flex-wrap: wrap; gap: 6px; margin: 1rem 0; }
+.highlight-chip { font-family: var(--mono); font-size: 11px; color: var(--text2); background: var(--bg); border: 1px solid var(--border); padding: 3px 10px; }
+
+/* CODE BLOCKS */
+.code-block { background: #f4f5f7; border: 1px solid var(--border); overflow-x: auto; margin: 1rem 0; }
+.code-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+.code-lang { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.06em; }
+.code-dots { display: flex; gap: 5px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; }
+.dot-r { background: #e06c75; } .dot-y { background: #e5c07b; } .dot-g { background: #98c379; }
+pre { padding: 1rem; font-family: var(--mono); font-size: 12px; line-height: 1.7; color: #2d3748; white-space: pre; overflow-x: auto; }
+.kw { color: #7c3aed; } .str { color: #2a7f62; } .cm { color: #94a3b8; } .ip { color: #2563eb; } .cmd { color: #b45309; }
+
+/* ISSUE CARDS */
+.issue-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1.5rem; }
+.issue-card { background: var(--surface); padding: 1.1rem 1.5rem; display: flex; gap: 1rem; align-items: flex-start; }
+.issue-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.dot-red { background: var(--red); } .dot-amber { background: var(--amber); }
+.issue-content { flex: 1; }
+.issue-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.issue-desc { font-size: 12px; color: var(--text3); line-height: 1.55; font-family: var(--mono); }
+.issue-resolution { font-family: var(--mono); font-size: 11px; color: var(--green); margin-top: 5px; }
+
+/* RESULTS */
+.results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1.5rem; }
+.result-card { background: var(--surface); padding: 1.25rem; }
+.result-card.highlight { background: var(--green-lt); }
+.result-icon { font-size: 1.1rem; margin-bottom: 0.5rem; }
+.result-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.result-desc { font-size: 12px; color: var(--text3); line-height: 1.5; font-weight: 300; }
+
+/* ALIAS + CRON TABLES */
+.alias-table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: var(--surface); border: 1px solid var(--border); }
+.alias-table td { padding: 7px 14px; font-size: 13px; border-bottom: 1px solid var(--border-lt); }
+.alias-table td:first-child { font-family: var(--mono); color: var(--green); font-size: 12px; width: 38%; border-right: 1px solid var(--border-lt); }
+.alias-table td:last-child { color: var(--text2); font-weight: 300; }
+.alias-table tr:last-child td { border-bottom: none; }
+
+.cron-table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: var(--surface); border: 1px solid var(--border); }
+.cron-table th { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; padding: 7px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+.cron-table td { padding: 8px 14px; font-size: 12px; border-bottom: 1px solid var(--border-lt); }
+.cron-table td:first-child { font-family: var(--mono); color: var(--green); border-right: 1px solid var(--border-lt); }
+.cron-table td:last-child { color: var(--text2); font-weight: 300; }
+.cron-table tr:last-child td { border-bottom: none; }
+.cron-table .existing td { color: var(--text3); }
+.cron-table .existing td:first-child { color: var(--text3); }
+
+/* SIDE-BY-SIDE INFO BOXES */
+.info-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+@media (max-width: 600px) { .info-pair { grid-template-columns: 1fr; } }
+.info-box { background: var(--surface); border: 1px solid var(--border); padding: 1.25rem; }
+.info-box-label { font-family: var(--mono); font-size: 10px; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; }
+.info-box p { font-size: 13px; margin: 0; }
+
+/* FOOTER */
+footer { padding: 2.25rem 0; border-top: 1px solid var(--border); }
+.footer-inner { max-width: 940px; margin: 0 auto; padding: 0 2.5rem; display: flex; align-items: center; justify-content: space-between; }
+.footer-left { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.footer-right { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.footer-right a { color: var(--text3); text-decoration: none; }
+.footer-right a:hover { color: var(--green); }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-back" href="https://chadmann22.github.io">← chadmann22.github.io</a>
+    <ul class="nav-right">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#implementation">Build</a></li>
+      <li><a href="#troubleshooting">Issues</a></li>
+      <li><a href="#results">Results</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-breadcrumb">
+      <a href="https://chadmann22.github.io">Portfolio</a>
+      <span>/</span>
+      <a href="https://chadmann22.github.io/privacy-pi/">Privacy Pi</a>
+      <span>/</span>
+      Observability Layer
+    </div>
+    <div class="hero-type">Privacy Pi — Phase 2</div>
+    <h1>Observability Layer<br>Logging, Alerting & Reporting</h1>
+    <p class="hero-sub">
+      A production-grade observability stack added to the Privacy Pi gateway — providing 
+      automated service monitoring with self-healing restarts, email alerting, intrusion 
+      detection notifications, weekly analytics reports, and a restructured live status dashboard.
+    </p>
+    <div class="badge-row">
+      <span class="badge badge-green">Monit</span>
+      <span class="badge badge-green">msmtp</span>
+      <span class="badge badge-green">Fail2ban</span>
+      <span class="badge badge-blue">SQLite / Pi-hole FTL</span>
+      <span class="badge badge-blue">unbound-control</span>
+      <span class="badge badge-gray">Bash scripting</span>
+      <span class="badge badge-gray">Logrotate</span>
+      <span class="badge badge-gray">Cron automation</span>
+      <span class="badge badge-gray">SMTP / TLS</span>
+    </div>
+    <div class="meta-strip">
+      <div class="meta-item">
+        <div class="meta-label">Built on</div>
+        <div class="meta-value">Existing Privacy Pi gateway</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Type</div>
+        <div class="meta-value">Monitoring & Observability</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Status</div>
+        <div class="meta-value live">● Production</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Alerting</div>
+        <div class="meta-value">Email via Gmail SMTP/TLS</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="wrap">
+    <div class="section-label">00 — Overview</div>
+    <h2>Project Summary</h2>
+    <div class="two-col">
+      <div>
+        <p>The Privacy Pi gateway was operational but dark — no visibility into service health, no alerting when something failed, and no consolidated reporting. If a service silently died, it would go unnoticed until the next manual login.</p>
+        <p>This phase adds a complete observability layer: automated service monitoring with self-healing restart attempts, email alerts on failure and recovery, intrusion detection with per-ban notifications, and a weekly analytics report.</p>
+      </div>
+      <div>
+        <p>The core monitoring tool chosen was <strong style="color: var(--text); font-weight: 500;">Monit</strong> — a purpose-built Unix service monitor with 20+ years of production use. It was selected over a custom bash script approach because it handles state tracking, retry logic, auto-restart, and email natively.</p>
+        <p>The only custom scripting retained is the weekly report, which queries Pi-hole's SQLite database and Unbound's control socket to produce analytics that no off-the-shelf tool knows how to generate for this specific stack.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="wrap">
+    <div class="section-label">01 — Architecture</div>
+    <h2>Observability Stack</h2>
+    <p>Three independent alert paths feed into the same email inbox, covering different categories of events.</p>
+
+    <div class="arch">
+      <div class="arch-title">Event flow — services to inbox</div>
+      <div class="arch-flow">
+        <div class="arch-node accent">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">👁</div>
+            <div>
+              <div class="arch-node-name">Monit daemon</div>
+              <div class="arch-node-desc">Checks all services every 2 minutes</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">auto-restart</span>
+        </div>
+        <div class="arch-arrow"></div>
+        <div class="arch-node">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">📝</div>
+            <div>
+              <div class="arch-node-name">monit-alert.sh</div>
+              <div class="arch-node-desc">Custom script — correlates failure + recovery</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">state-aware</span>
+        </div>
+        <div class="arch-arrow"></div>
+        <div class="arch-node">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">📧</div>
+            <div>
+              <div class="arch-node-name">msmtp → Gmail</div>
+              <div class="arch-node-desc">Lightweight SMTP relay, no daemon</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">TLS port 587</span>
+        </div>
+        <div class="arch-arrow"></div>
+        <div class="arch-node accent">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">📥</div>
+            <div>
+              <div class="arch-node-name">Inbox</div>
+              <div class="arch-node-desc">Failure + recovery in one consolidated email</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">consolidated</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-pair">
+      <div class="info-box">
+        <div class="info-box-label">Fail2ban path</div>
+        <p>Fail2ban operates independently. On every SSH ban it fires its own email via msmtp with the offending IP and relevant log lines. Runs in parallel with Monit, not through it.</p>
+      </div>
+      <div class="info-box">
+        <div class="info-box-label">Weekly report path</div>
+        <p>A cron job fires every Sunday at 8AM. The report script queries Pi-hole's FTL database directly via SQLite, pulls Unbound cache stats via the control socket, reads Fail2ban and SSH logs, and emails a formatted plain-text summary.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3>Design decision — Monit over custom bash</h3>
+    <p>The initial implementation plan used a hand-rolled bash monitor script with state files, checked every 5 minutes via cron. This was replaced with Monit for several reasons: Monit handles state tracking, retry logic, auto-restart attempts, and email natively — eliminating maintenance burden. It checks every 2 minutes instead of 5, uses ~15–25MB RAM with no cron overhead, and exposes a local web status dashboard at port 2812.</p>
+    <p>The one area where custom scripting was retained is alert formatting. Monit's default behavior sends one email per event, resulting in two separate emails for a single failure/recovery cycle. A custom exec script (<span class="inline-code">monit-alert.sh</span>) was written to log failure timestamps and send a single consolidated email on recovery showing down time, recovery time, and full system status.</p>
+  </div>
+</section>
+
+<!-- IMPLEMENTATION -->
+<section id="implementation">
+  <div class="wrap">
+    <div class="section-label">02 — Implementation</div>
+    <h2>Phase-by-Phase Deployment</h2>
+
+    <div class="phase-grid">
+
+      <div class="phase-card open">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 1</span>
+          <span class="phase-title">msmtp — Email Relay</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>All alerting and reporting depends on reliable outbound email. <span class="inline-code">msmtp</span> was chosen over Postfix because it requires no daemon, no queue management, and a single config file. It sends mail and exits — nothing running in the background.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">msmtp + mailutils</span>
+            <span class="highlight-chip">Gmail App Password (not account password)</span>
+            <span class="highlight-chip">TLS on port 587</span>
+            <span class="highlight-chip">chmod 644 for multi-user access</span>
+          </div>
+          <div class="warn-callout">
+            <strong style="color: var(--text); font-weight: 500;">Gmail App Password required.</strong> Gmail does not accept account passwords for SMTP relay. A 16-character App Password must be generated at myaccount.google.com → Security → App Passwords (requires 2-Step Verification). The App Password is scoped only to mail sending and can be revoked independently.
+          </div>
+          <div class="callout">
+            The config file was set to <span class="inline-code">chmod 644</span> rather than the more restrictive <span class="inline-code">600</span>. This is required because Monit, cron jobs, and Fail2ban all run under different system users and all need to read the config to send mail. The credential stored is an App Password, not the Gmail account password, so the reduced restriction is acceptable.
+          </div>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">/etc/msmtprc</span></div>
+            <pre><span class="kw">defaults</span>
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        /var/log/msmtp.log
+
+<span class="kw">account</span>        gmail
+host           smtp.gmail.com
+port           <span class="str">587</span>
+from           <span class="ip">[address]@gmail.com</span>
+user           <span class="ip">[address]@gmail.com</span>
+password       <span class="str">[16-char app password]</span>
+
+<span class="kw">account default</span> : gmail</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 2</span>
+          <span class="phase-title">Unbound Logging & Control Socket</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Two additions were made to Unbound before Monit and the weekly report could use it: a dedicated log file for event tracking, and the <span class="inline-code">remote-control</span> socket so <span class="inline-code">unbound-control stats_noreset</span> can be queried by the report script for cache hit rates.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">Dedicated log at /var/log/unbound/</span>
+            <span class="highlight-chip">verbosity: 1 (errors only)</span>
+            <span class="highlight-chip">log-queries: no (prevents log bloat)</span>
+            <span class="highlight-chip">control-use-cert: no (local socket)</span>
+          </div>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">appended to pihole.conf</span></div>
+            <pre><span class="kw">remote-control:</span>
+    control-enable: <span class="str">yes</span>
+    control-interface: /var/run/unbound.sock
+    control-use-cert: <span class="str">no</span>
+
+<span class="kw">server:</span>
+    logfile: <span class="str">"/var/log/unbound/unbound.log"</span>
+    verbosity: <span class="str">1</span>
+    log-queries: <span class="str">no</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 3</span>
+          <span class="phase-title">Fail2ban — Email Alerts on Ban</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Fail2ban was already installed and protecting SSH from Phase 1 of the Privacy Pi build. This phase added email notification via <span class="inline-code">jail.local</span> so every ban fires an email with the offending IP and relevant log context.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">Already installed — config only</span>
+            <span class="highlight-chip">action_mwl — ban + email + log lines</span>
+            <span class="highlight-chip">systemd journal backend</span>
+            <span class="highlight-chip">24h SSH ban duration</span>
+          </div>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">/etc/fail2ban/jail.local</span></div>
+            <pre><span class="kw">[DEFAULT]</span>
+destemail = <span class="ip">[address]@gmail.com</span>
+sender    = <span class="ip">[address]@gmail.com</span>
+mta       = mail
+action    = <span class="str">%(action_mwl)s</span>   <span class="cm"># ban + email + log lines</span>
+bantime   = 1h
+findtime  = 10m
+maxretry  = 5
+
+<span class="kw">[sshd]</span>
+enabled  = <span class="str">true</span>
+port     = ssh
+logpath  = <span class="str">%(sshd_log)s</span>
+backend  = <span class="str">systemd</span>
+maxretry = 5
+bantime  = 24h</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 4</span>
+          <span class="phase-title">Monit — Service Monitor & Auto-restart</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Monit monitors all six services (pihole-FTL, unbound, stubby, tailscaled, fail2ban, and itself), performs port-level connectivity checks, and monitors disk, memory, CPU load, and the encrypted DNS upstream. On failure it attempts an automatic restart before alerting.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">2-minute check interval</span>
+            <span class="highlight-chip">Auto-restart on failure</span>
+            <span class="highlight-chip">Port checks: 5335, 8053, 853</span>
+            <span class="highlight-chip">Disk, memory, CPU thresholds</span>
+            <span class="highlight-chip">Status page at :2812 (LAN only)</span>
+          </div>
+          <div class="callout">
+            <strong style="color: var(--text); font-weight: 500;">Systemd unit fix required.</strong> The Debian-packaged <span class="inline-code">monit.service</span> unit file was missing <span class="inline-code">Type=forking</span>. Since Monit daemonizes itself, systemd was interpreting the initial process exit as completion and immediately marking the service dead. The unit file at <span class="inline-code">/etc/systemd/system/monit.service</span> required manual correction before the service would run persistently.
+          </div>
+          <div class="callout">
+            <strong style="color: var(--text); font-weight: 500;">Unbound PID file not created by systemd.</strong> The initial config referenced <span class="inline-code">/run/unbound.pid</span> which Unbound does not create when running under systemd. Switched to <span class="inline-code">matching "unbound"</span> (process name match) to resolve.
+          </div>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">monitrc — example service block</span></div>
+            <pre><span class="kw">check process</span> unbound
+    <span class="cmd">matching</span> <span class="str">"unbound"</span>
+    start program = <span class="str">"/usr/bin/systemctl start unbound"</span>
+    stop  program = <span class="str">"/usr/bin/systemctl stop unbound"</span>
+    <span class="kw">if does not exist then exec</span> <span class="str">"/usr/local/bin/monit-alert.sh"</span>
+    <span class="kw">if 2 restarts within 3 cycles then exec</span> <span class="str">"/usr/local/bin/monit-alert.sh"</span>
+    <span class="kw">if failed</span> host <span class="ip">127.0.0.1</span> port <span class="str">5335</span> type tcp <span class="kw">then restart</span>
+    <span class="kw">if recovered then exec</span> <span class="str">"/usr/local/bin/monit-alert.sh"</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 4b</span>
+          <span class="phase-title">monit-alert.sh — Consolidated Email Alerts</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Monit's default behavior sends one email per event, producing two separate emails per failure/recovery cycle. A custom exec script was written to replace this with consolidated, human-readable alerts. On failure: logs the timestamp to a state file and immediately sends an alert. On recovery: reads the failure timestamp, calculates downtime, queries <span class="inline-code">monit summary</span> for full system status, and sends a single consolidated recovery email.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">State files in /var/lib/privacy-pi/monit-alerts/</span>
+            <span class="highlight-chip">Failure time logged on first event</span>
+            <span class="highlight-chip">Recovery email: downtime + full status</span>
+            <span class="highlight-chip">Informational events suppressed</span>
+          </div>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">recovery email format</span></div>
+            <pre>SERVICE RECOVERY CONFIRMED
+════════════════════════════════════
+Service  : stubby
+Host     : privacy-pi
+Recovered: 2026-04-17 08:47 PM
+Down since: 2026-04-17 08:45 PM
+────────────────────────────────────
+SYSTEM STATUS
+✓ All services active — system OK
+────────────────────────────────────
+ALL MONITORED SERVICES
+  pihole-FTL    Running
+  unbound       Running
+  stubby        Running
+  tailscaled    Running
+  fail2ban      Running
+════════════════════════════════════</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 5</span>
+          <span class="phase-title">Weekly Report Script</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>A bash script runs every Sunday at 8AM via cron, assembles a weekly analytics report from multiple data sources, and emails it as plain text. All data is pulled from live system sources — no manual aggregation required.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">Pi-hole FTL database via sqlite3</span>
+            <span class="highlight-chip">Unbound cache stats via unbound-control</span>
+            <span class="highlight-chip">Fail2ban ban counts + recent IPs</span>
+            <span class="highlight-chip">SSH failure/success counts via journalctl</span>
+            <span class="highlight-chip">Disk, memory, CPU temp, uptime</span>
+            <span class="highlight-chip">Last backup file and size</span>
+          </div>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">report sections</span></div>
+            <pre>DNS ACTIVITY         <span class="cm">← sqlite3 query on pihole-FTL.db</span>
+  Total / Blocked / Forwarded / Cached
+
+UNBOUND CACHE        <span class="cm">← unbound-control stats_noreset</span>
+  Hit rate / Miss count
+
+TOP 5 BLOCKED DOMAINS
+TOP 5 CLIENTS BY QUERY VOLUME
+
+SECURITY             <span class="cm">← fail2ban-client + journalctl</span>
+  Fail2ban bans / SSH failures / successes
+
+SERVICE STATUS       <span class="cm">← monit summary</span>
+SYSTEM               <span class="cm">← df, free, vcgencmd, uptime</span>
+BACKUP               <span class="cm">← /opt/backups/ directory</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 6</span>
+          <span class="phase-title">Logrotate</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>A logrotate policy was added covering all new log files from this phase. Four-week retention with compression prevents unbounded disk growth.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">Weekly rotation</span>
+            <span class="highlight-chip">4 weeks retained</span>
+            <span class="highlight-chip">Compressed with delaycompress</span>
+            <span class="highlight-chip">Covers monit, msmtp, unbound, privacy-pi logs</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 7</span>
+          <span class="phase-title">Cron Schedule & Aliases</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>One new cron entry was added. Monit runs as its own daemon and requires no cron entry for monitoring. Shell aliases were added for all new tools, and the login MOTD was fully restructured.</p>
+          <table class="cron-table">
+            <tr><th>Schedule</th><th>Job</th></tr>
+            <tr class="existing"><td>Sun 3:00 AM</td><td>System updates + Pi-hole binary + blocklists</td></tr>
+            <tr class="existing"><td>Sun 4:00 AM</td><td>Full config backup (30-day retention)</td></tr>
+            <tr class="existing"><td>1st of month 5:00 AM</td><td>Root hints refresh</td></tr>
+            <tr><td>Sun 8:00 AM</td><td>Weekly analytics report → email</td></tr>
+          </table>
+          <p style="margin-top: 0.75rem; font-size: 12px; color: var(--text3);">Dimmed rows are existing jobs from Phase 1 of the Privacy Pi build.</p>
+          <table class="alias-table" style="margin-top: 1.5rem;">
+            <tr><td>pi-health</td><td>Interactive full system status check</td></tr>
+            <tr><td>pi-monit</td><td>Monit service status summary</td></tr>
+            <tr><td>pi-monit-log</td><td>View recent Monit event log</td></tr>
+            <tr><td>pi-update</td><td>Run system updates manually</td></tr>
+            <tr><td>pi-backup</td><td>Run config backup manually</td></tr>
+            <tr><td>pi-report</td><td>Send weekly analytics report now</td></tr>
+            <tr><td>pi-report-log</td><td>View report send history</td></tr>
+            <tr><td>pihole -t</td><td>Live DNS query log</td></tr>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TROUBLESHOOTING -->
+<section id="troubleshooting">
+  <div class="wrap">
+    <div class="section-label">03 — Problem Solving</div>
+    <h2>Troubleshooting Log</h2>
+    <div class="issue-list">
+      <div class="issue-card">
+        <div class="issue-dot dot-red"></div>
+        <div class="issue-content">
+          <div class="issue-title">msmtp permission denied — non-zero exit status without sudo</div>
+          <div class="issue-desc">The config file was set to 600 (root-only read). Non-root users including cron jobs and Monit could not read it, causing mail to fail silently unless run as root.</div>
+          <div class="issue-resolution">→ Changed to chmod 644. The stored credential is an App Password scoped to mail only.</div>
+        </div>
+      </div>
+      <div class="issue-card">
+        <div class="issue-dot dot-red"></div>
+        <div class="issue-content">
+          <div class="issue-title">Monit service exiting immediately — inactive (dead) after start</div>
+          <div class="issue-desc">The Debian-packaged monit.service unit file was missing Type=forking. Monit daemonizes itself on startup — the parent process exits and a child continues running. Without Type=forking, systemd interpreted the parent exit as the service completing and marked it dead.</div>
+          <div class="issue-resolution">→ Created /etc/systemd/system/monit.service with Type=forking, PIDFile=/run/monit.pid, and correct ExecStart/Stop/Reload paths. Ran systemctl daemon-reload.</div>
+        </div>
+      </div>
+      <div class="issue-card">
+        <div class="issue-dot dot-red"></div>
+        <div class="issue-content">
+          <div class="issue-title">Monit unable to monitor Unbound — pidfile does not exist</div>
+          <div class="issue-desc">The initial config used with pidfile "/run/unbound.pid". Unbound does not create a PID file when managed by systemd — the file path was correct for sysvinit deployments but not for systemd-managed services.</div>
+          <div class="issue-resolution">→ Changed to matching "unbound" (process name pattern match), consistent with how stubby and tailscaled are monitored.</div>
+        </div>
+      </div>
+      <div class="issue-card">
+        <div class="issue-dot dot-amber"></div>
+        <div class="issue-content">
+          <div class="issue-title">Monit flooding terminal with /proc/attr/current errors in verbose mode</div>
+          <div class="issue-desc">Running monit -Iv produced hundreds of "Cannot read proc file /proc/N/attr/current -- Invalid argument" lines. Monit attempts to read SELinux security attributes for all running processes, which do not exist on Raspberry Pi OS.</div>
+          <div class="issue-resolution">→ Confirmed these errors are cosmetic — they only appear in verbose mode and have no effect on daemon operation. No config change required.</div>
+        </div>
+      </div>
+      <div class="issue-card">
+        <div class="issue-dot dot-amber"></div>
+        <div class="issue-content">
+          <div class="issue-title">Two separate emails per failure/recovery cycle</div>
+          <div class="issue-desc">Monit's built-in alert system sends one email per state change event. A service going down then recovering produces two separate emails with no context linking them.</div>
+          <div class="issue-resolution">→ Replaced Monit's built-in email action with a custom exec script (monit-alert.sh) that logs failure timestamps to state files and sends a single consolidated recovery email showing downtime and full system status.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results">
+  <div class="wrap">
+    <div class="section-label">04 — Outcomes</div>
+    <h2>Results & Validation</h2>
+    <div class="results-grid">
+      <div class="result-card highlight">
+        <div class="result-icon">🔔</div>
+        <div class="result-title">Email alerts confirmed</div>
+        <div class="result-desc">Tested by stopping each service manually. Failure email arrives within 2 minutes. Recovery email confirms restart with full system status.</div>
+      </div>
+      <div class="result-card highlight">
+        <div class="result-icon">🔄</div>
+        <div class="result-title">Auto-restart working</div>
+        <div class="result-desc">Monit detects failed services and issues systemctl restart before alerting. Services recovered automatically in testing without manual intervention.</div>
+      </div>
+      <div class="result-card highlight">
+        <div class="result-icon">📊</div>
+        <div class="result-title">Weekly reports delivering</div>
+        <div class="result-desc">Report tested manually — delivers DNS stats, block percentages, top blocked domains, Fail2ban activity, and full system health in one email.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">🛡</div>
+        <div class="result-title">Intrusion detection active</div>
+        <div class="result-desc">Fail2ban SSH jail confirmed active via fail2ban-client status. Email fires on every ban with IP and log context.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">🖥</div>
+        <div class="result-title">Status dashboard live</div>
+        <div class="result-desc">Monit web interface accessible at http://[PI_IP]:2812 from any LAN browser. Shows real-time status of all monitored resources.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">📋</div>
+        <div class="result-title">MOTD restructured</div>
+        <div class="result-desc">Login screen now surfaces live DNS stats, Fail2ban counts, color-coded resources, and maintenance schedule on every SSH session.</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <h3>Resource impact</h3>
+    <p>The observability layer added approximately 15–25MB RAM for the Monit daemon. All other components (msmtp, the report script, logrotate) are invoked on demand with no persistent memory footprint. Disk usage is approximately 20–40MB per month before rotation, retained for 4 weeks.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">Privacy Pi — Observability Layer</div>
+    <div class="footer-right"><a href="https://chadmann22.github.io">← Back to portfolio</a></div>
+  </div>
+</footer>
+
+<script>
+function togglePhase(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

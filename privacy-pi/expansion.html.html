@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Pi — Expansion & Hardening | Chad Mann</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #f7f8f9;
+  --surface:   #ffffff;
+  --border:    #dde1e7;
+  --border-lt: #eef0f3;
+  --text:      #141b27;
+  --text2:     #4b5563;
+  --text3:     #94a3b8;
+  --green:     #2a7f62;
+  --green-dim: rgba(42,127,98,0.08);
+  --green-lt:  #f0f9f5;
+  --blue:      #2f5fa3;
+  --blue-dim:  rgba(47,95,163,0.07);
+  --amber:     #b45309;
+  --amber-dim: rgba(180,83,9,0.07);
+  --red:       #be2f2f;
+  --mono: 'JetBrains Mono', monospace;
+  --body: 'Onest', sans-serif;
+  --display: 'Bricolage Grotesque', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+nav { position: sticky; top: 0; z-index: 100; background: rgba(247,248,249,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+.nav-inner { max-width: 940px; margin: 0 auto; padding: 0 2.5rem; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+.nav-back { font-family: var(--mono); font-size: 11px; color: var(--text3); text-decoration: none; letter-spacing: 0.06em; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+.nav-back:hover { color: var(--green); }
+.nav-right { display: flex; gap: 1.5rem; list-style: none; }
+.nav-right a { font-family: var(--mono); font-size: 11px; color: var(--text3); text-decoration: none; letter-spacing: 0.06em; text-transform: uppercase; transition: color 0.15s; }
+.nav-right a:hover { color: var(--green); }
+@media (max-width: 640px) { .nav-right { display: none; } }
+
+/* LAYOUT */
+.wrap { max-width: 940px; margin: 0 auto; padding: 0 2.5rem; }
+@media (max-width: 640px) { .wrap { padding: 0 1.5rem; } }
+
+/* HERO */
+.hero { padding: 5rem 0 4rem; border-bottom: 1px solid var(--border); }
+.hero-breadcrumb { font-family: var(--mono); font-size: 11px; color: var(--text3); letter-spacing: 0.06em; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; }
+.hero-breadcrumb a { color: var(--text3); text-decoration: none; }
+.hero-breadcrumb a:hover { color: var(--green); }
+.hero-breadcrumb span { color: var(--border); }
+.hero-type { font-family: var(--mono); font-size: 11px; color: var(--green); letter-spacing: 0.1em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; margin-bottom: 1.25rem; }
+.hero-type::before { content: ''; width: 20px; height: 1px; background: var(--green); }
+h1 { font-family: var(--display); font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 500; line-height: 1.15; letter-spacing: -0.03em; color: var(--text); margin-bottom: 1.25rem; }
+.hero-sub { font-size: 1.05rem; color: var(--text2); max-width: 620px; line-height: 1.75; font-weight: 300; margin-bottom: 2rem; }
+.badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2.5rem; }
+.badge { font-family: var(--mono); font-size: 10px; padding: 4px 10px; border-radius: 2px; letter-spacing: 0.04em; }
+.badge-green { color: var(--green); background: var(--green-dim); border: 1px solid rgba(42,127,98,0.2); }
+.badge-blue  { color: var(--blue);  background: var(--blue-dim);  border: 1px solid rgba(47,95,163,0.2); }
+.badge-gray  { color: var(--text3); background: var(--surface);   border: 1px solid var(--border); }
+.meta-strip { display: flex; gap: 0; border: 1px solid var(--border); background: var(--surface); overflow: hidden; flex-wrap: wrap; }
+.meta-item { padding: 0.75rem 1.25rem; border-right: 1px solid var(--border); flex: 1; min-width: 120px; }
+.meta-item:last-child { border-right: none; }
+.meta-label { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+.meta-value { font-size: 13px; color: var(--text2); font-weight: 400; }
+.meta-value.live { color: var(--green); font-weight: 500; }
+
+/* SECTIONS */
+section { padding: 4rem 0; border-bottom: 1px solid var(--border); }
+section:last-child { border-bottom: none; }
+.section-label { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+h2 { font-family: var(--display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; color: var(--text); margin-bottom: 1.5rem; }
+h3 { font-family: var(--display); font-size: 1rem; font-weight: 500; color: var(--text); margin-bottom: 0.6rem; }
+p { color: var(--text2); font-weight: 300; margin-bottom: 1rem; }
+p:last-child { margin-bottom: 0; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+@media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+.divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+.inline-code { font-family: var(--mono); font-size: 12px; background: var(--bg); color: var(--green); border: 1px solid var(--border); padding: 1px 6px; }
+.callout { background: var(--green-lt); border: 1px solid rgba(42,127,98,0.25); border-left: 3px solid var(--green); padding: 0.85rem 1rem; margin: 1rem 0; font-size: 13px; color: var(--text2); font-weight: 300; }
+.warn-callout { background: #fffbf0; border: 1px solid rgba(180,83,9,0.2); border-left: 3px solid var(--amber); padding: 0.85rem 1rem; margin: 1rem 0; font-size: 13px; color: var(--text2); font-weight: 300; }
+
+/* CAPABILITY GRID */
+.cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin: 2rem 0; }
+@media (max-width: 600px) { .cap-grid { grid-template-columns: 1fr; } }
+.cap-item { background: var(--surface); padding: 1.5rem; }
+.cap-item.accent { background: var(--green-lt); }
+.cap-title { font-family: var(--mono); font-size: 11px; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.6rem; }
+.cap-desc { font-size: 13px; color: var(--text2); font-weight: 300; line-height: 1.6; }
+
+/* BEFORE/AFTER */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+@media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-box { background: var(--surface); border: 1px solid var(--border); padding: 1.25rem; }
+.compare-box.accent { border-color: rgba(42,127,98,0.3); }
+.compare-label { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.85rem; }
+.compare-label.green { color: var(--green); }
+.compare-flow { font-family: var(--mono); font-size: 12px; color: var(--text2); line-height: 2.2; }
+.compare-flow .arrow { color: var(--text3); }
+.compare-flow .note { font-size: 11px; }
+.compare-flow .note.bad { color: var(--red); }
+.compare-flow .note.good { color: var(--green); }
+
+/* PHASES */
+.phase-grid { display: flex; flex-direction: column; gap: 1px; margin-top: 1.5rem; background: var(--border); border: 1px solid var(--border); }
+.phase-card { background: var(--surface); overflow: hidden; }
+.phase-header { display: flex; align-items: center; gap: 1.25rem; padding: 1.1rem 1.5rem; cursor: pointer; user-select: none; transition: background 0.15s; }
+.phase-header:hover { background: var(--bg); }
+.phase-num { font-family: var(--mono); font-size: 10px; color: var(--text3); min-width: 56px; letter-spacing: 0.06em; }
+.phase-title { font-family: var(--display); font-size: 0.95rem; font-weight: 500; color: var(--text); flex: 1; }
+.phase-status { font-family: var(--mono); font-size: 10px; color: var(--green); background: var(--green-dim); border: 1px solid rgba(42,127,98,0.2); padding: 2px 8px; letter-spacing: 0.04em; }
+.phase-chevron { color: var(--text3); font-size: 10px; transition: transform 0.2s; }
+.phase-card.open .phase-chevron { transform: rotate(180deg); }
+.phase-body { display: none; padding: 1.5rem; border-top: 1px solid var(--border-lt); }
+.phase-card.open .phase-body { display: block; }
+.phase-body p { font-size: 14px; }
+.phase-highlights { display: flex; flex-wrap: wrap; gap: 6px; margin: 1rem 0; }
+.highlight-chip { font-family: var(--mono); font-size: 11px; color: var(--text2); background: var(--bg); border: 1px solid var(--border); padding: 3px 10px; }
+
+/* CODE */
+.code-block { background: #f4f5f7; border: 1px solid var(--border); overflow-x: auto; margin: 1rem 0; }
+.code-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+.code-lang { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.06em; }
+.code-dots { display: flex; gap: 5px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; }
+.dot-r { background: #e06c75; } .dot-y { background: #e5c07b; } .dot-g { background: #98c379; }
+pre { padding: 1rem; font-family: var(--mono); font-size: 12px; line-height: 1.7; color: #2d3748; white-space: pre; overflow-x: auto; }
+.kw { color: #7c3aed; } .str { color: #2a7f62; } .cm { color: #94a3b8; } .ip { color: #2563eb; } .cmd { color: #b45309; }
+
+/* ISSUE CARDS */
+.issue-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1.5rem; }
+.issue-card { background: var(--surface); padding: 1.1rem 1.5rem; display: flex; gap: 1rem; align-items: flex-start; }
+.issue-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.dot-red { background: var(--red); } .dot-amber { background: var(--amber); } .dot-green-s { background: var(--green); }
+.issue-content { flex: 1; }
+.issue-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.issue-desc { font-size: 12px; color: var(--text3); line-height: 1.55; font-family: var(--mono); }
+.issue-resolution { font-family: var(--mono); font-size: 11px; color: var(--green); margin-top: 5px; }
+
+/* RESULTS */
+.results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1.5rem; }
+.result-card { background: var(--surface); padding: 1.25rem; }
+.result-card.highlight { background: var(--green-lt); }
+.result-icon { font-size: 1.1rem; margin-bottom: 0.5rem; }
+.result-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.result-desc { font-size: 12px; color: var(--text3); line-height: 1.5; font-weight: 300; }
+
+/* TABLES */
+.alias-table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: var(--surface); border: 1px solid var(--border); }
+.alias-table td { padding: 7px 14px; font-size: 13px; border-bottom: 1px solid var(--border-lt); }
+.alias-table td:first-child { font-family: var(--mono); color: var(--green); font-size: 12px; width: 38%; border-right: 1px solid var(--border-lt); }
+.alias-table td:last-child { color: var(--text2); font-weight: 300; }
+.alias-table tr:last-child td { border-bottom: none; }
+
+.cron-table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: var(--surface); border: 1px solid var(--border); }
+.cron-table th { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; padding: 7px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+.cron-table td { padding: 8px 14px; font-size: 12px; border-bottom: 1px solid var(--border-lt); }
+.cron-table td:first-child { font-family: var(--mono); color: var(--green); border-right: 1px solid var(--border-lt); }
+.cron-table td:last-child { color: var(--text2); font-weight: 300; }
+.cron-table tr:last-child td { border-bottom: none; }
+.cron-table .existing td { color: var(--text3); }
+.cron-table .existing td:first-child { color: var(--text3); }
+
+/* FOOTER */
+footer { padding: 2.25rem 0; border-top: 1px solid var(--border); }
+.footer-inner { max-width: 940px; margin: 0 auto; padding: 0 2.5rem; display: flex; align-items: center; justify-content: space-between; }
+.footer-left { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.footer-right { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.footer-right a { color: var(--text3); text-decoration: none; }
+.footer-right a:hover { color: var(--green); }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-back" href="https://chadmann22.github.io">← chadmann22.github.io</a>
+    <ul class="nav-right">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#implementation">Build</a></li>
+      <li><a href="#troubleshooting">Issues</a></li>
+      <li><a href="#results">Results</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-breadcrumb">
+      <a href="https://chadmann22.github.io">Portfolio</a>
+      <span>/</span>
+      <a href="https://chadmann22.github.io/privacy-pi/">Privacy Pi</a>
+      <span>/</span>
+      Expansion & Hardening
+    </div>
+    <div class="hero-type">Privacy Pi — Phase 3</div>
+    <h1>Expansion & Hardening<br>DNS Validation · WAN Monitoring · Remote Backup</h1>
+    <p class="hero-sub">
+      A targeted hardening and expansion layer closing functional blind spots in DNS monitoring, 
+      adding resilient multi-channel alerting, building historical metrics tracking, and 
+      implementing a zero-infrastructure remote backup system via Tailscale Taildrop.
+    </p>
+    <div class="badge-row">
+      <span class="badge badge-green">Monit program checks</span>
+      <span class="badge badge-green">ntfy.sh push notifications</span>
+      <span class="badge badge-green">Taildrop file transfer</span>
+      <span class="badge badge-blue">WAN outage detection</span>
+      <span class="badge badge-blue">SQLite / Pi-hole FTL</span>
+      <span class="badge badge-gray">Bash scripting</span>
+      <span class="badge badge-gray">CSV metrics trending</span>
+      <span class="badge badge-gray">Fallback alert chain</span>
+    </div>
+    <div class="meta-strip">
+      <div class="meta-item">
+        <div class="meta-label">Built on</div>
+        <div class="meta-value">Privacy Pi Phase 1 + Phase 2</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Type</div>
+        <div class="meta-value">Hardening & Expansion</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Status</div>
+        <div class="meta-value live">● Production</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Alerting</div>
+        <div class="meta-value">Email + ntfy push (parallel)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="wrap">
+    <div class="section-label">00 — Overview</div>
+    <h2>Project Summary</h2>
+    <div class="two-col">
+      <div>
+        <p>With the core DNS stack and observability layer in place, a systematic review identified several meaningful gaps: Monit's port checks confirmed TCP connectivity but not actual DNS resolution. The entire alert pipeline depended on a single transport — if WAN dropped, all alerts were silently lost. There was no historical record of system metrics over time. And the backup strategy had no offsite copy.</p>
+        <p>This phase addresses all four gaps with targeted, lightweight additions that fit the existing headless, low-maintenance design philosophy.</p>
+      </div>
+      <div>
+        <p>The most significant architectural decision was dual-channel alerting — email and push notifications firing in parallel rather than in a fallback chain. Every alert now reaches the phone independently of email delivery, which means WAN outages no longer create silent monitoring blackouts.</p>
+        <p>The remote backup solution was simplified from a full OpenSSH server deployment to a single <span class="inline-code">tailscale file cp</span> command using Taildrop — zero new attack surface, zero new services running on the laptop.</p>
+      </div>
+    </div>
+
+    <div class="cap-grid">
+      <div class="cap-item accent">
+        <div class="cap-title">DNS Resolution Check</div>
+        <div class="cap-desc">Monit <span class="inline-code">check program</span> block runs a real <span class="inline-code">dig</span> query through all four stack layers every 10 minutes. Tests Pi-hole, Unbound, Stubby, and DNSSEC validation independently. Catches silent failures port checks cannot detect.</div>
+      </div>
+      <div class="cap-item accent">
+        <div class="cap-title">Dual-Channel Alerting + WAN Monitor</div>
+        <div class="cap-desc">monit-alert.sh now fires email AND ntfy push simultaneously on every event. A separate WAN monitor script runs every 5 minutes, requires 3 consecutive failures before declaring an outage, and sends a consolidated recovery notification when connectivity restores.</div>
+      </div>
+      <div class="cap-item accent">
+        <div class="cap-title">Weekly CSV Metrics</div>
+        <div class="cap-desc">One row appended to <span class="inline-code">weekly-metrics.csv</span> with every Sunday report run. Captures DNS query volume, block rate, Unbound cache performance, Fail2ban activity, disk usage, CPU temp, and uptime. Permanent historical record — excluded from log rotation.</div>
+      </div>
+      <div class="cap-item accent">
+        <div class="cap-title">Remote Backup via Taildrop</div>
+        <div class="cap-desc">Manually triggered <span class="inline-code">pi-backup-remote</span> command creates a fresh snapshot and delivers it to the sysadmin laptop over the existing Tailscale mesh using Taildrop. No OpenSSH server required on the receiving end. Works from anywhere both devices have Tailscale connected.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="wrap">
+    <div class="section-label">01 — Architecture</div>
+    <h2>Alert Pipeline — Before & After</h2>
+    <p>The original alert pipeline had a single transport. The revised design fires two independent channels simultaneously and maintains a local fallback log regardless of either channel's availability.</p>
+
+    <div class="compare-grid">
+      <div class="compare-box">
+        <div class="compare-label">Before — single transport</div>
+        <div class="compare-flow">
+          Monit event<br>
+          <span class="arrow">→</span> monit-alert.sh<br>
+          <span class="arrow">→</span> msmtp → Gmail<br>
+          <span class="note bad">✗ WAN down = silent failure</span>
+        </div>
+      </div>
+      <div class="compare-box accent">
+        <div class="compare-label green">After — parallel delivery</div>
+        <div class="compare-flow">
+          Monit event<br>
+          <span class="arrow">→</span> monit-alert.sh<br>
+          <span class="arrow">├→</span> msmtp → Gmail<br>
+          <span class="arrow">├→</span> curl → ntfy.sh → iPhone<br>
+          <span class="arrow">└→</span> local pending-alerts.log<br>
+          <span class="note good">✓ WAN down = phone still notified</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3>WAN monitor — false positive mitigation</h3>
+    <p>A naive ping-based WAN check fires false positives when ISPs briefly rate-limit ICMP traffic without affecting TCP connections. The WAN monitor requires three consecutive 5-minute check failures — 15 minutes of sustained outage — before declaring WAN down and alerting. This threshold was arrived at through real-world testing where a 5-minute ping gap generated a false alert while household devices continued operating normally.</p>
+
+    <div class="code-block">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">wan-monitor — failure threshold logic</span></div>
+      <pre><span class="cm"># Increment consecutive failure counter</span>
+COUNT=1
+[ -f <span class="str">"$CONSECUTIVE_FILE"</span> ] && COUNT=$(( $(cat "$CONSECUTIVE_FILE") + 1 ))
+echo <span class="str">"$COUNT"</span> > <span class="str">"$CONSECUTIVE_FILE"</span>
+
+<span class="kw">if</span> [ <span class="str">"$COUNT"</span> -lt 3 ]; then
+    <span class="cm"># Not yet confirmed — log but do not alert</span>
+    exit 0
+<span class="kw">fi</span>
+
+<span class="cm"># 3 consecutive failures (15 min) — declare confirmed outage</span></pre>
+    </div>
+
+    <div class="divider"></div>
+    <h3>Remote backup — Taildrop vs OpenSSH</h3>
+    <p>The initial design called for enabling Windows OpenSSH Server on the sysadmin laptop, generating SSH keys, and setting up key-based auth. This was rejected: the laptop is not hardened and adding a listening SSH server increases attack surface unnecessarily for an occasional manual operation.</p>
+    <p>Taildrop was the correct tool — it uses the already-trusted Tailscale tunnel, requires nothing new on the receiving device, and delivers files to the standard Downloads folder via the existing Tailscale system tray. The Pi required one one-time configuration change: <span class="inline-code">sudo tailscale set --operator=pi</span> to allow the pi user to run Tailscale file operations without root elevation.</p>
+  </div>
+</section>
+
+<!-- IMPLEMENTATION -->
+<section id="implementation">
+  <div class="wrap">
+    <div class="section-label">02 — Implementation</div>
+    <h2>Phase-by-Phase Deployment</h2>
+
+    <div class="phase-grid">
+
+      <div class="phase-card open">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 1</span>
+          <span class="phase-title">DNS Resolution Check</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>A dedicated script performs four functional DNS tests on every invocation: a real <span class="inline-code">dig</span> query through Pi-hole on port 53, direct to Unbound on port 5335, direct to Stubby on port 8053, and a DNSSEC negative test confirming that a known-bad domain is blocked rather than resolved. The script exits 0 on full pass, 1 on any failure. Monit evaluates the exit code.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">4 independent resolution tests</span>
+            <span class="highlight-chip">DNSSEC negative validation</span>
+            <span class="highlight-chip">Every 5 Monit cycles (10 min)</span>
+            <span class="highlight-chip">Logs to /var/log/privacy-pi/dns-check.log</span>
+            <span class="highlight-chip">Exit code drives Monit alerting</span>
+          </div>
+          <div class="callout">
+            <strong style="color: var(--text); font-weight: 500;">Test domain selection matters.</strong> The test domain was initially changed from <span class="inline-code">example.com</span> to <span class="inline-code">cloudflare.com</span> which caused immediate false failures — cloudflare.com appeared on a Pi-hole blocklist. <span class="inline-code">example.com</span> is IANA-reserved specifically for testing and will never appear on any blocklist.
+          </div>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">check-dns-resolution.sh — core logic</span></div>
+            <pre><span class="cm"># Test 1: Full stack via Pi-hole</span>
+RESULT=$(dig +short +timeout=3 +tries=1 example.com @<span class="ip">127.0.0.1</span> 2>/dev/null)
+[ -z <span class="str">"$RESULT"</span> ] && FAILURES=$((FAILURES + 1))
+
+<span class="cm"># Test 2: Direct to Unbound</span>
+RESULT=$(dig +short +timeout=3 +tries=1 example.com @<span class="ip">127.0.0.1</span> -p <span class="str">5335</span> 2>/dev/null)
+[ -z <span class="str">"$RESULT"</span> ] && FAILURES=$((FAILURES + 1))
+
+<span class="cm"># Test 3: Direct to Stubby</span>
+RESULT=$(dig +short +timeout=3 +tries=1 example.com @<span class="ip">127.0.0.1</span> -p <span class="str">8053</span> 2>/dev/null)
+[ -z <span class="str">"$RESULT"</span> ] && FAILURES=$((FAILURES + 1))
+
+<span class="cm"># Test 4: DNSSEC — bad domain must NOT resolve</span>
+RESULT=$(dig +short +timeout=3 +tries=1 dnssec-failed.org @<span class="ip">127.0.0.1</span> 2>/dev/null)
+[ -n <span class="str">"$RESULT"</span> ] && FAILURES=$((FAILURES + 1))
+
+[ <span class="str">"$FAILURES"</span> -eq 0 ] && exit 0 || exit 1</pre>
+          </div>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">monitrc — program check block</span></div>
+            <pre><span class="kw">check program</span> dns_resolution
+    <span class="cmd">with path</span> <span class="str">"/usr/local/bin/check-dns-resolution.sh"</span>
+    every 5 cycles
+    <span class="kw">if status</span> != 0 <span class="kw">then exec</span> <span class="str">"/usr/local/bin/monit-alert.sh"</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 2</span>
+          <span class="phase-title">Dual-Channel Alerting + WAN Monitor</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Two changes were made to the alerting layer. First, <span class="inline-code">monit-alert.sh</span> was updated to fire both email and ntfy push notifications in parallel on every alert. Second, a dedicated WAN monitor script was added to cron to detect and report internet outages independently of Monit.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">Email + ntfy always fire together</span>
+            <span class="highlight-chip">ntfy.sh hosted — no self-hosting</span>
+            <span class="highlight-chip">Local pending-alerts.log as tertiary</span>
+            <span class="highlight-chip">WAN monitor every 5 minutes</span>
+            <span class="highlight-chip">3 consecutive failures = confirmed outage</span>
+            <span class="highlight-chip">Pending alerts flushed on WAN recovery</span>
+          </div>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">monit-alert.sh — parallel delivery function</span></div>
+            <pre><span class="kw">deliver_alert</span>() {
+    local subject=<span class="str">"$1"</span>
+    local body=<span class="str">"$2"</span>
+    local ntfy_priority=<span class="str">"${3:-default}"</span>
+
+    <span class="cm"># Always write locally first</span>
+    log_local <span class="str">"$subject"</span> <span class="str">"$body"</span>
+
+    <span class="cm"># Email — fires independently</span>
+    send_email <span class="str">"$subject"</span> <span class="str">"$body"</span>
+
+    <span class="cm"># ntfy — fires independently, regardless of email result</span>
+    send_ntfy <span class="str">"Privacy-Pi: $subject"</span> <span class="str">"$body"</span> <span class="str">"$ntfy_priority"</span>
+}</pre>
+          </div>
+          <p style="margin-top: 1rem;">The ntfy send function uses <span class="inline-code">curl</span> with a 5-second timeout to POST to the personal topic URL. ntfy.sh caches notifications server-side — if the phone is offline when the alert fires, the notification is delivered when the phone next connects. This is the key advantage for WAN-down scenarios.</p>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 3</span>
+          <span class="phase-title">Weekly CSV Metrics</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>A CSV append block was added to the existing weekly report script. Every Sunday at 8AM, after the email report is sent, a single row is appended to <span class="inline-code">/var/log/privacy-pi/weekly-metrics.csv</span>. The header row is written automatically on first run. The file is excluded from logrotate — it grows indefinitely as a permanent trending record.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">Appended with weekly report (Sun 8AM)</span>
+            <span class="highlight-chip">CSV excluded from log rotation</span>
+            <span class="highlight-chip">Emailed alongside weekly report</span>
+            <span class="highlight-chip">pi-csv-email alias for on-demand export</span>
+          </div>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">weekly-metrics.csv — column schema</span></div>
+            <pre>date, total_queries, blocked, block_pct, forwarded, cached,
+unbound_cache_hits, unbound_hit_pct,
+f2b_bans_total, ssh_failures_7d,
+disk_used_pct, cpu_temp_c, uptime_days</pre>
+          </div>
+          <p style="margin-top: 1rem;">The CSV is emailed as plain text with the weekly report and can be pasted directly into a Google Sheet — one permanent Sheet with the header row set once, then one row pasted each week as it arrives, building a chart-ready history over time.</p>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 4</span>
+          <span class="phase-title">Remote Backup via Taildrop</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>A manually-triggered remote backup script pushes a fresh config snapshot to the sysadmin laptop via Tailscale Taildrop. The entire implementation required two things: enabling Taildrop receive on the Windows laptop (a single checkbox, on by default) and granting the pi user Tailscale operator permissions on the Pi.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">tailscale file cp — no OpenSSH needed</span>
+            <span class="highlight-chip">sudo tailscale set --operator=pi</span>
+            <span class="highlight-chip">Connectivity verified before transfer</span>
+            <span class="highlight-chip">Works remotely from anywhere on tailnet</span>
+            <span class="highlight-chip">Remote snapshot cleaned up after send</span>
+          </div>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">pi-backup-remote.sh — transfer step</span></div>
+            <pre><span class="cm"># Verify adminlab is reachable in the tailnet</span>
+<span class="kw">if</span> ! sudo -u pi tailscale status 2>/dev/null | grep -q <span class="str">"adminlab"</span>; then
+    echo <span class="str">"ERROR: adminlab not found in Tailscale status."</span>
+    exit 1
+<span class="kw">fi</span>
+
+<span class="cm"># Send via Taildrop — file arrives in Downloads on laptop</span>
+sudo -u pi tailscale file cp <span class="str">"$TARGET"</span> <span class="str">"adminlab:"</span></pre>
+          </div>
+          <div class="callout">
+            The backup includes all config files, scripts, aliases, and service unit overrides — everything needed to restore a working Privacy Pi from scratch. The snapshot is deleted from the Pi after a confirmed successful transfer.
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 5</span>
+          <span class="phase-title">MOTD & Health Check Overhaul</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Both the login MOTD and the <span class="inline-code">pi-health</span> command were fully rewritten to surface all new monitoring data alongside the existing stack information.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">WAN status with outage state display</span>
+            <span class="highlight-chip">DNS resolution check status from log</span>
+            <span class="highlight-chip">Monit summary inline on login</span>
+            <span class="highlight-chip">Last report + CSV row count</span>
+            <span class="highlight-chip">pi-health: all checks with pass/fail/warn</span>
+            <span class="highlight-chip">pi-health: issue count summary line</span>
+          </div>
+          <p>The health check now runs through nine distinct check categories — services, DNS resolution, WAN, Tailscale, Pi-hole stats, Monit summary, Fail2ban/SSH, system resources, and backup/maintenance state — and prints a total issue count at the bottom. Each check is independently color-coded with threshold-based warnings on disk, memory, and CPU temperature.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TROUBLESHOOTING -->
+<section id="troubleshooting">
+  <div class="wrap">
+    <div class="section-label">03 — Problem Solving</div>
+    <h2>Troubleshooting Log</h2>
+    <div class="issue-list">
+
+      <div class="issue-card">
+        <div class="issue-dot dot-red"></div>
+        <div class="issue-content">
+          <div class="issue-title">ntfy not firing — only email arriving on alerts</div>
+          <div class="issue-desc">The initial monit-alert.sh design used ntfy as a fallback that only fired when email failed. Under normal conditions email always succeeds, so ntfy never triggered.</div>
+          <div class="issue-resolution">→ Rewrote deliver_alert() to call send_email and send_ntfy independently in sequence — both fire on every event regardless of the other's result.</div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-dot dot-red"></div>
+        <div class="issue-content">
+          <div class="issue-title">WAN false positive — 5-minute outage alert during normal household usage</div>
+          <div class="issue-desc">The monitor fired an outage alert for a window where all household devices were operating normally. ISPs can briefly rate-limit or drop ICMP ping packets without affecting TCP/UDP traffic. A single failed 5-minute ping check is insufficient evidence of a real outage.</div>
+          <div class="issue-resolution">→ Added a consecutive failure counter requiring 3 checks (15 minutes) before declaring and alerting on a confirmed outage. Counter resets on any successful ping.</div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-dot dot-red"></div>
+        <div class="issue-content">
+          <div class="issue-title">Taildrop "Access denied" — file access denied error during transfer</div>
+          <div class="issue-desc">The backup script ran as root via sudo, but tailscale file cp requires the invoking user to be an authorized Tailscale operator. Root is not automatically an operator.</div>
+          <div class="issue-resolution">→ Ran sudo tailscale set --operator=pi once to grant the pi user operator permissions. Transfer then succeeded without any script changes.</div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-dot dot-amber"></div>
+        <div class="issue-content">
+          <div class="issue-title">DNS resolution check false failure — cloudflare.com blocked by Pi-hole</div>
+          <div class="issue-desc">The test domain was changed from example.com to cloudflare.com and immediately began generating false failure alerts. cloudflare.com appeared on an active Pi-hole blocklist, causing the Pi-hole port 53 test to return no answer even though the stack was fully functional.</div>
+          <div class="issue-resolution">→ Reverted to example.com — an IANA-reserved test domain that will never appear on any blocklist and is specifically designed for this type of infrastructure testing.</div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-dot dot-amber"></div>
+        <div class="issue-content">
+          <div class="issue-title">Permission denied clearing pending-alerts.log</div>
+          <div class="issue-desc">The file is written by root-owned processes (WAN monitor, monit-alert.sh). Running the truncation command as the pi user without sudo was denied.</div>
+          <div class="issue-resolution">→ Updated alias to use sudo truncate -s 0 /var/log/privacy-pi/pending-alerts.log.</div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-dot dot-green-s"></div>
+        <div class="issue-content">
+          <div class="issue-title">OpenSSH Server — rejected in favour of Taildrop</div>
+          <div class="issue-desc">The initial remote backup design required enabling Windows OpenSSH Server on the sysadmin laptop, generating SSH keys, configuring administrators_authorized_keys, and managing file permissions. The laptop is not hardened and adding a persistent listening service was disproportionate to the use case.</div>
+          <div class="issue-resolution">→ Design replaced entirely with Tailscale Taildrop. Zero new services, zero new attack surface, simpler implementation, identical result.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results">
+  <div class="wrap">
+    <div class="section-label">04 — Outcomes</div>
+    <h2>Results & Validation</h2>
+    <div class="results-grid">
+      <div class="result-card highlight">
+        <div class="result-icon">🔍</div>
+        <div class="result-title">Real DNS validation active</div>
+        <div class="result-desc">Monit now runs actual dig queries through every stack layer every 10 minutes. Port connectivity and functional resolution are monitored independently.</div>
+      </div>
+      <div class="result-card highlight">
+        <div class="result-icon">📱</div>
+        <div class="result-title">Dual-channel alerts confirmed</div>
+        <div class="result-desc">Email and ntfy push both fire on every Monit event. Tested by manually stopping services — both channels delivered within 2 minutes independently.</div>
+      </div>
+      <div class="result-card highlight">
+        <div class="result-icon">📡</div>
+        <div class="result-title">WAN outage detection working</div>
+        <div class="result-desc">Confirmed outage detection and recovery notification in production. False positive threshold tuned to 15 minutes to eliminate ICMP rate-limiting noise.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">📊</div>
+        <div class="result-title">Metrics history building</div>
+        <div class="result-desc">CSV appending confirmed. Weekly data rows accumulating — importable into Google Sheets for trend analysis and charting.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">💾</div>
+        <div class="result-title">Remote backup via Taildrop</div>
+        <div class="result-desc">13MB config snapshot delivered to sysadmin laptop Downloads folder over Tailscale. Confirmed working from home network and remotely.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">🖥</div>
+        <div class="result-title">MOTD & health check complete</div>
+        <div class="result-desc">Login screen and pi-health command now surface all monitoring data — WAN state, DNS check status, Monit summary, CSV row count, and pending alerts.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3>Complete alias reference</h3>
+    <table class="alias-table">
+      <tr><td>pi-health</td><td>Full system health check with pass/fail/warn per category</td></tr>
+      <tr><td>pi-monit</td><td>Monit service status summary</td></tr>
+      <tr><td>pi-monit-log</td><td>View recent Monit event log</td></tr>
+      <tr><td>pi-dns-check</td><td>Run DNS resolution check now and print result</td></tr>
+      <tr><td>pi-dns-log</td><td>View DNS check history log</td></tr>
+      <tr><td>pi-wan-status</td><td>Check current WAN outage state</td></tr>
+      <tr><td>pi-wan-log</td><td>View WAN outage history</td></tr>
+      <tr><td>pi-pending-alerts</td><td>View alerts queued during outages</td></tr>
+      <tr><td>pi-pending-clear</td><td>Clear pending alerts after review</td></tr>
+      <tr><td>pi-update</td><td>Run system updates manually</td></tr>
+      <tr><td>pi-backup</td><td>Run local config backup</td></tr>
+      <tr><td>pi-backup-list</td><td>List stored local backups</td></tr>
+      <tr><td>pi-backup-remote</td><td>Create snapshot and send to adminlab via Taildrop</td></tr>
+      <tr><td>pi-report</td><td>Send weekly analytics report now</td></tr>
+      <tr><td>pi-report-log</td><td>View report send history</td></tr>
+      <tr><td>pi-metrics</td><td>View full CSV metrics history</td></tr>
+      <tr><td>pi-metrics-tail</td><td>View last 10 CSV rows</td></tr>
+      <tr><td>pi-csv-email</td><td>Email CSV export on demand</td></tr>
+      <tr><td>pihole -t</td><td>Live DNS query log</td></tr>
+    </table>
+
+    <div class="divider"></div>
+    <h3>Complete cron schedule</h3>
+    <table class="cron-table">
+      <tr><th>Schedule</th><th>Job</th></tr>
+      <tr class="existing"><td>Sun 3:00 AM</td><td>System updates + Pi-hole binary + blocklists</td></tr>
+      <tr class="existing"><td>Sun 4:00 AM</td><td>Full config backup (30-day local retention)</td></tr>
+      <tr class="existing"><td>1st of month 5:00 AM</td><td>Root hints refresh</td></tr>
+      <tr class="existing"><td>Sun 8:00 AM</td><td>Weekly analytics report + CSV append</td></tr>
+      <tr><td>Every 5 min</td><td>WAN connectivity monitor (3-failure threshold)</td></tr>
+    </table>
+    <p style="margin-top: 0.75rem; font-size: 12px; color: var(--text3);">Dimmed rows are existing jobs from earlier phases. Monit runs as a daemon — no cron entry needed for service monitoring or DNS checks.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">Privacy Pi — Expansion & Hardening</div>
+    <div class="footer-right"><a href="https://chadmann22.github.io">← Back to portfolio</a></div>
+  </div>
+</footer>
+
+<script>
+function togglePhase(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

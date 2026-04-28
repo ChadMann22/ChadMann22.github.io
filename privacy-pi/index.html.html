@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Pi — Home Network DNS Gateway | Chad Mann</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #f7f8f9;
+  --surface:   #ffffff;
+  --border:    #dde1e7;
+  --border-lt: #eef0f3;
+  --text:      #141b27;
+  --text2:     #4b5563;
+  --text3:     #94a3b8;
+  --green:     #2a7f62;
+  --green-dim: rgba(42,127,98,0.08);
+  --green-lt:  #f0f9f5;
+  --blue:      #2f5fa3;
+  --blue-dim:  rgba(47,95,163,0.07);
+  --amber:     #b45309;
+  --amber-dim: rgba(180,83,9,0.07);
+  --red:       #be2f2f;
+  --mono: 'JetBrains Mono', monospace;
+  --body: 'Onest', sans-serif;
+  --display: 'Bricolage Grotesque', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,248,249,0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  max-width: 940px; margin: 0 auto; padding: 0 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+}
+.nav-back {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); text-decoration: none;
+  letter-spacing: 0.06em;
+  display: flex; align-items: center; gap: 6px;
+  transition: color 0.15s;
+}
+.nav-back:hover { color: var(--green); }
+.nav-right { display: flex; gap: 1.5rem; list-style: none; }
+.nav-right a {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); text-decoration: none;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  transition: color 0.15s;
+}
+.nav-right a:hover { color: var(--green); }
+@media (max-width: 640px) { .nav-right { display: none; } }
+
+/* LAYOUT */
+.wrap { max-width: 940px; margin: 0 auto; padding: 0 2.5rem; }
+@media (max-width: 640px) { .wrap { padding: 0 1.5rem; } }
+
+/* BREADCRUMB + HERO */
+.hero {
+  padding: 5rem 0 4rem;
+  border-bottom: 1px solid var(--border);
+}
+.hero-breadcrumb {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); letter-spacing: 0.06em;
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-breadcrumb a { color: var(--text3); text-decoration: none; }
+.hero-breadcrumb a:hover { color: var(--green); }
+.hero-breadcrumb span { color: var(--border); }
+
+.hero-type {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--green); letter-spacing: 0.1em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 1.25rem;
+}
+.hero-type::before { content: ''; width: 20px; height: 1px; background: var(--green); }
+
+h1 {
+  font-family: var(--display);
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+}
+.hero-sub {
+  font-size: 1.05rem; color: var(--text2);
+  max-width: 620px; line-height: 1.75; font-weight: 300;
+  margin-bottom: 2rem;
+}
+.badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2.5rem; }
+.badge {
+  font-family: var(--mono); font-size: 10px;
+  padding: 4px 10px; border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+.badge-green { color: var(--green); background: var(--green-dim); border: 1px solid rgba(42,127,98,0.2); }
+.badge-blue  { color: var(--blue);  background: var(--blue-dim);  border: 1px solid rgba(47,95,163,0.2); }
+.badge-gray  { color: var(--text3); background: var(--surface);   border: 1px solid var(--border); }
+
+.meta-strip {
+  display: flex; gap: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+.meta-item {
+  padding: 0.75rem 1.25rem;
+  border-right: 1px solid var(--border);
+  flex: 1; min-width: 120px;
+}
+.meta-item:last-child { border-right: none; }
+.meta-label {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+.meta-value { font-size: 13px; color: var(--text2); font-weight: 400; }
+.meta-value.live { color: var(--green); font-weight: 500; }
+
+/* SECTIONS */
+section { padding: 4rem 0; border-bottom: 1px solid var(--border); }
+section:last-child { border-bottom: none; }
+
+.section-label {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+h2 {
+  font-family: var(--display);
+  font-size: 1.5rem; font-weight: 500;
+  letter-spacing: -0.02em; color: var(--text);
+  margin-bottom: 1.5rem;
+}
+h3 {
+  font-family: var(--display);
+  font-size: 1rem; font-weight: 500;
+  color: var(--text); margin-bottom: 0.6rem;
+}
+p { color: var(--text2); font-weight: 300; margin-bottom: 1rem; }
+p:last-child { margin-bottom: 0; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+@media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+.divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+/* ARCHITECTURE FLOW */
+.arch {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  margin: 2rem 0;
+}
+.arch-title {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 1.75rem; text-align: center;
+}
+.arch-stack { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.arch-node {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 0.85rem 1.25rem;
+  width: 100%; max-width: 460px;
+}
+.arch-node.accent {
+  border-color: rgba(42,127,98,0.35);
+  background: var(--green-lt);
+}
+.arch-node-left { display: flex; align-items: center; gap: 10px; }
+.arch-node-icon {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; border: 1px solid var(--border);
+  background: var(--surface); flex-shrink: 0;
+}
+.arch-node-name { font-family: var(--mono); font-size: 12px; color: var(--text); }
+.arch-node-desc { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.arch-node-badge {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--green); background: var(--green-dim);
+  border: 1px solid rgba(42,127,98,0.2);
+  padding: 2px 7px;
+}
+.arch-arrow {
+  width: 1px; height: 20px;
+  background: var(--border);
+  margin: 0 auto;
+  position: relative;
+}
+.arch-arrow::after {
+  content: '▼';
+  position: absolute; bottom: -12px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px; color: var(--green);
+}
+
+/* PHASES */
+.phase-grid { display: flex; flex-direction: column; gap: 1px; margin-top: 1.5rem; background: var(--border); border: 1px solid var(--border); }
+.phase-card { background: var(--surface); overflow: hidden; }
+.phase-header {
+  display: flex; align-items: center; gap: 1.25rem;
+  padding: 1.1rem 1.5rem;
+  cursor: pointer; user-select: none;
+  transition: background 0.15s;
+}
+.phase-header:hover { background: var(--bg); }
+.phase-num {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--text3); min-width: 56px; letter-spacing: 0.06em;
+}
+.phase-title {
+  font-family: var(--display);
+  font-size: 0.95rem; font-weight: 500;
+  color: var(--text); flex: 1;
+}
+.phase-status {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--green);
+  background: var(--green-dim);
+  border: 1px solid rgba(42,127,98,0.2);
+  padding: 2px 8px; letter-spacing: 0.04em;
+}
+.phase-chevron { color: var(--text3); font-size: 10px; transition: transform 0.2s; }
+.phase-card.open .phase-chevron { transform: rotate(180deg); }
+.phase-body { display: none; padding: 1.5rem; border-top: 1px solid var(--border-lt); }
+.phase-card.open .phase-body { display: block; }
+.phase-body p { font-size: 14px; }
+.phase-highlights { display: flex; flex-wrap: wrap; gap: 6px; margin: 1rem 0; }
+.highlight-chip {
+  font-family: var(--mono); font-size: 11px; color: var(--text2);
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 3px 10px;
+}
+
+/* CODE BLOCKS */
+.code-block {
+  background: #f4f5f7;
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.code-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.code-lang { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.06em; }
+.code-dots { display: flex; gap: 5px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; }
+.dot-r { background: #e06c75; } .dot-y { background: #e5c07b; } .dot-g { background: #98c379; }
+pre {
+  padding: 1rem;
+  font-family: var(--mono); font-size: 12px; line-height: 1.7;
+  color: #2d3748; white-space: pre; overflow-x: auto;
+}
+.kw { color: #7c3aed; } .str { color: #2a7f62; } .cm { color: #94a3b8; }
+.ip { color: #2563eb; } .cmd { color: #b45309; }
+
+/* INLINE CODE */
+.inline-code {
+  font-family: var(--mono); font-size: 12px;
+  background: var(--bg); color: var(--green);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+}
+
+/* CALLOUT */
+.callout {
+  background: var(--green-lt); border: 1px solid rgba(42,127,98,0.25);
+  border-left: 3px solid var(--green);
+  padding: 0.85rem 1rem; margin: 1rem 0;
+  font-size: 13px; color: var(--text2); font-weight: 300;
+}
+
+/* ISSUE CARDS */
+.issue-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1.5rem; }
+.issue-card {
+  background: var(--surface);
+  padding: 1.1rem 1.5rem;
+  display: flex; gap: 1rem; align-items: flex-start;
+}
+.issue-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 6px;
+}
+.dot-red { background: var(--red); }
+.dot-amber { background: var(--amber); }
+.dot-green-s { background: var(--green); }
+.issue-content { flex: 1; }
+.issue-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.issue-desc { font-size: 12px; color: var(--text3); line-height: 1.55; font-family: var(--mono); }
+.issue-resolution {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--green); margin-top: 5px;
+}
+
+/* RESULTS */
+.results-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1px; background: var(--border); border: 1px solid var(--border);
+  margin-top: 1.5rem;
+}
+.result-card {
+  background: var(--surface);
+  padding: 1.25rem;
+}
+.result-card.highlight { background: var(--green-lt); }
+.result-icon { font-size: 1.1rem; margin-bottom: 0.5rem; }
+.result-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.result-desc { font-size: 12px; color: var(--text3); line-height: 1.5; font-weight: 300; }
+
+/* SKILLS */
+.skills-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px; background: var(--border); border: 1px solid var(--border);
+  margin-top: 1.5rem;
+}
+.skill-group { background: var(--surface); padding: 1.5rem; }
+.skill-group-title {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--green); text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 0.85rem;
+}
+.skill-list { list-style: none; }
+.skill-list li {
+  font-size: 13px; color: var(--text2); font-weight: 300;
+  padding: 5px 0; border-bottom: 1px solid var(--border-lt);
+  display: flex; align-items: center; gap: 10px;
+}
+.skill-list li:last-child { border-bottom: none; }
+.skill-list li::before {
+  content: '–'; color: var(--text3);
+  font-family: var(--mono); font-size: 10px;
+}
+
+/* FOOTER */
+footer { padding: 2.25rem 0; border-top: 1px solid var(--border); }
+.footer-inner {
+  max-width: 940px; margin: 0 auto; padding: 0 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-left { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.footer-right { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.footer-right a { color: var(--text3); text-decoration: none; }
+.footer-right a:hover { color: var(--green); }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-back" href="https://chadmann22.github.io">← chadmann22.github.io</a>
+    <ul class="nav-right">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#implementation">Build</a></li>
+      <li><a href="#troubleshooting">Issues</a></li>
+      <li><a href="#results">Results</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-breadcrumb">
+      <a href="https://chadmann22.github.io">Portfolio</a>
+      <span>/</span>
+      Privacy Pi
+    </div>
+    <div class="hero-type">Home Lab Project</div>
+    <h1>Privacy Pi<br>Home Network DNS Gateway</h1>
+    <p class="hero-sub">
+      End-to-end design and deployment of a privacy-focused network gateway on a 
+      Raspberry Pi 4 — providing network-wide ad blocking, encrypted DNS, DNSSEC 
+      validation, and mesh VPN remote access for an entire home network.
+    </p>
+    <div class="badge-row">
+      <span class="badge badge-green">Pi-hole</span>
+      <span class="badge badge-green">Unbound</span>
+      <span class="badge badge-green">Stubby</span>
+      <span class="badge badge-blue">Tailscale</span>
+      <span class="badge badge-blue">Raspberry Pi 4</span>
+      <span class="badge badge-gray">Debian Linux</span>
+      <span class="badge badge-gray">UFW / iptables</span>
+      <span class="badge badge-gray">DNS-over-TLS</span>
+      <span class="badge badge-gray">DNSSEC</span>
+      <span class="badge badge-gray">Fail2ban</span>
+    </div>
+    <div class="meta-strip">
+      <div class="meta-item">
+        <div class="meta-label">Platform</div>
+        <div class="meta-value">Raspberry Pi 4 (Debian Trixie)</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Type</div>
+        <div class="meta-value">Home Lab / Infrastructure</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Status</div>
+        <div class="meta-value live">● Production</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Scope</div>
+        <div class="meta-value">Full home network</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="wrap">
+    <div class="section-label">00 — Overview</div>
+    <h2>Project Summary</h2>
+    <div class="two-col">
+      <div>
+        <p>This project addresses a gap common to most home networks: DNS traffic is unencrypted, unfiltered, and routed through an ISP's resolvers — exposing browsing habits and serving ads to every device on the network.</p>
+        <p>The solution is a dedicated Raspberry Pi 4 acting as a network-wide DNS gateway. Every device on the LAN — phones, TVs, laptops, smart home devices — automatically routes its DNS through the Pi without any per-device configuration.</p>
+      </div>
+      <div>
+        <p>The stack was built in phases, with each layer adding a distinct privacy or security capability: ad blocking, recursive local resolution, DNSSEC validation, DNS-over-TLS encryption, and remote access via mesh VPN.</p>
+        <p>The system is fully automated with weekly updates, config backups, and a login MOTD that surfaces live service status, network info, and quick commands on every SSH session.</p>
+      </div>
+    </div>
+    <div class="callout">
+      The Pi runs headless on a USB SSD, connected via Ethernet to the router's LAN port. A static IP is assigned at both the OS level and via router DHCP reservation, ensuring the DNS server address never changes.
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="wrap">
+    <div class="section-label">01 — Architecture</div>
+    <h2>DNS Stack Design</h2>
+    <p>Each component in the stack has a distinct, non-overlapping role. DNS queries flow through all four layers on every resolution.</p>
+
+    <div class="arch">
+      <div class="arch-title">DNS query flow — LAN clients to internet</div>
+      <div class="arch-stack">
+
+        <div class="arch-node">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">📡</div>
+            <div>
+              <div class="arch-node-name">LAN Devices</div>
+              <div class="arch-node-desc">All home devices, no per-device config</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">port 53</span>
+        </div>
+        <div class="arch-arrow"></div>
+
+        <div class="arch-node accent">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">🛡</div>
+            <div>
+              <div class="arch-node-name">Pi-hole</div>
+              <div class="arch-node-desc">Blocklist filtering — ads, trackers, telemetry</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">DNS filter</span>
+        </div>
+        <div class="arch-arrow"></div>
+
+        <div class="arch-node accent">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">⚙️</div>
+            <div>
+              <div class="arch-node-name">Unbound</div>
+              <div class="arch-node-desc">Local caching + DNSSEC validation</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">port 5335</span>
+        </div>
+        <div class="arch-arrow"></div>
+
+        <div class="arch-node accent">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">🔒</div>
+            <div>
+              <div class="arch-node-name">Stubby</div>
+              <div class="arch-node-desc">DNS-over-TLS encryption to upstream resolvers</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">port 8053</span>
+        </div>
+        <div class="arch-arrow"></div>
+
+        <div class="arch-node">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">🌐</div>
+            <div>
+              <div class="arch-node-name">Cloudflare / Quad9</div>
+              <div class="arch-node-desc">Upstream resolvers — queries arrive encrypted</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">port 853 TLS</span>
+        </div>
+
+      </div>
+    </div>
+
+    <p style="margin-top: 1.5rem;"><strong style="color: var(--text); font-weight: 500;">Unbound's role shifts in Phase 3.</strong> Initially configured as a local recursive resolver, Unbound is later given a <span class="inline-code">forward-zone</span> directive pointing to Stubby. From that point forward, Unbound acts as a caching and DNSSEC validation layer — handing off actual resolution to Stubby, which encrypts it in transit.</p>
+
+    <div class="divider"></div>
+    <h3>Remote Access</h3>
+    <p>Tailscale provides zero-config mesh VPN access without port forwarding. Remote devices authenticate via Tailscale and connect to the Pi's Tailscale IP, with subnet routing enabled to access the full LAN.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <span class="code-lang">bash</span>
+      </div>
+      <pre><span class="cm"># Single command — advertise LAN routes, don't override local DNS stack</span>
+<span class="cmd">sudo tailscale up</span> <span class="kw">--advertise-routes</span>=<span class="ip">192.168.0.0/24</span> <span class="kw">--accept-dns</span>=<span class="str">false</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- IMPLEMENTATION -->
+<section id="implementation">
+  <div class="wrap">
+    <div class="section-label">02 — Implementation</div>
+    <h2>Phase-by-Phase Deployment</h2>
+    <p>The project was executed in six sequential phases. Click each phase to expand details.</p>
+
+    <div class="phase-grid">
+
+      <div class="phase-card open">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 0</span>
+          <span class="phase-title">OS Installation & System Hardening</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Flashed Raspberry Pi OS Lite (64-bit) to a USB SSD using Raspberry Pi Imager with SSH pre-enabled. Assigned a static IP on the LAN, configured UFW to restrict inbound access to LAN-only on all ports, and installed Fail2ban for SSH brute force protection.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">Static IP via dhcpcd.conf</span>
+            <span class="highlight-chip">UFW — LAN-only rules</span>
+            <span class="highlight-chip">Fail2ban — SSH protection</span>
+          </div>
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+              <span class="code-lang">dhcpcd.conf</span>
+            </div>
+            <pre><span class="cm"># /etc/dhcpcd.conf — static IP assignment</span>
+<span class="kw">interface</span> eth0
+<span class="kw">static</span> ip_address=<span class="ip">[LAN_IP]/24</span>
+<span class="kw">static</span> routers=<span class="ip">[GATEWAY_IP]</span>
+<span class="cm"># Set to upstream DNS during install; changed to 127.0.0.1 after Unbound verified</span>
+<span class="kw">static</span> domain_name_servers=<span class="ip">127.0.0.1</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 1</span>
+          <span class="phase-title">Pi-hole — Network-Wide DNS Filtering</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Installed Pi-hole via the official script. Configured the router's DHCP server to advertise the Pi's IP as the primary DNS server for all LAN clients. This single change redirects all DNS traffic on the network through Pi-hole without touching individual devices.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">One-command install</span>
+            <span class="highlight-chip">Router DHCP DNS override</span>
+            <span class="highlight-chip">Web dashboard on port 80</span>
+            <span class="highlight-chip">UFW — port 53 LAN-only</span>
+          </div>
+          <div class="callout">
+            UFW required explicit rules for port 53 (DNS) and port 80 (dashboard). The web admin interface would not load until port 80 was opened, even on LAN — a subtle but easily missed step.
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 2</span>
+          <span class="phase-title">Unbound — Local Recursive Resolver</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Deployed Unbound as a local recursive DNS resolver, eliminating reliance on any third-party resolver for resolution. Pi-hole was pointed at Unbound on port 5335. Root hints were downloaded and DNSSEC validation enabled using Unbound's built-in trust anchor.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">Listens on 127.0.0.1:5335</span>
+            <span class="highlight-chip">DNSSEC validation</span>
+            <span class="highlight-chip">QNAME minimisation</span>
+            <span class="highlight-chip">Query caching</span>
+          </div>
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+              <span class="code-lang">unbound.conf</span>
+            </div>
+            <pre><span class="kw">server:</span>
+    interface: <span class="ip">127.0.0.1</span>
+    port: <span class="str">5335</span>
+    do-not-query-localhost: <span class="kw">no</span>   <span class="cm"># required for Stubby forwarding</span>
+    access-control: <span class="ip">127.0.0.1/32</span> allow
+    access-control: <span class="ip">0.0.0.0/0</span>  refuse
+    hide-identity: <span class="kw">yes</span>
+    hide-version: <span class="kw">yes</span>
+    qname-minimisation: <span class="kw">yes</span>
+    harden-dnssec-stripped: <span class="kw">yes</span>
+    prefetch: <span class="kw">yes</span>
+
+<span class="kw">forward-zone:</span>         <span class="cm"># added in Phase 3</span>
+    name: <span class="str">"."</span>
+    forward-addr: <span class="ip">127.0.0.1</span>@<span class="str">8053</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 3</span>
+          <span class="phase-title">Stubby — DNS-over-TLS Encryption</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Configured Stubby to listen on port 8053 and forward queries to Cloudflare and Quad9 over TLS port 853 with certificate authentication. A <span class="inline-code">forward-zone</span> was appended to Unbound's config to hand off all resolution to Stubby, completing the encrypted DNS pipeline.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">TLS authentication required</span>
+            <span class="highlight-chip">Cloudflare + Quad9 upstreams</span>
+            <span class="highlight-chip">Port 853 encrypted egress</span>
+          </div>
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+              <span class="code-lang">stubby.yml</span>
+            </div>
+            <pre><span class="kw">dns_transport_list:</span>
+  - GETDNS_TRANSPORT_TLS
+<span class="kw">tls_authentication:</span> GETDNS_AUTHENTICATION_REQUIRED
+<span class="kw">listen_addresses:</span>
+  - <span class="ip">127.0.0.1</span>@<span class="str">8053</span>
+<span class="kw">upstream_recursive_servers:</span>
+  - address_data: <span class="ip">1.1.1.1</span>
+    tls_auth_name: <span class="str">"cloudflare-dns.com"</span>
+  - address_data: <span class="ip">9.9.9.9</span>
+    tls_auth_name: <span class="str">"dns.quad9.net"</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 4</span>
+          <span class="phase-title">Tailscale — Mesh VPN Remote Access</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>WireGuard was originally planned but set aside due to a Windows client compatibility issue. Tailscale was selected as a replacement — providing the same secure tunnel capability with significantly simpler setup: no key distribution, no port forwarding, and no static public IP required.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">No port forwarding required</span>
+            <span class="highlight-chip">Subnet routing for full LAN</span>
+            <span class="highlight-chip">IPv4 + IPv6 forwarding</span>
+            <span class="highlight-chip">UDP GRO optimized</span>
+            <span class="highlight-chip">--accept-dns=false</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 5</span>
+          <span class="phase-title">Firewall Finalization & Maintenance Automation</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Finalized UFW rules, corrected the default forward policy to ACCEPT (required for Tailscale subnet routing), and automated maintenance via three cron jobs and a custom MOTD script.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">DEFAULT_FORWARD_POLICY=ACCEPT</span>
+            <span class="highlight-chip">Weekly apt + Pi-hole updates</span>
+            <span class="highlight-chip">Weekly config backups</span>
+            <span class="highlight-chip">Monthly root hints refresh</span>
+            <span class="highlight-chip">Login MOTD with live status</span>
+          </div>
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+              <span class="code-lang">crontab</span>
+            </div>
+            <pre><span class="cm"># Weekly updates — Sunday 3AM</span>
+0 3 * * 0 /usr/local/bin/weekly-updates.sh >> /var/log/weekly-updates.log 2>&1
+
+<span class="cm"># Weekly backup — Sunday 4AM</span>
+0 4 * * 0 /usr/local/bin/weekly-backup.sh >> /var/log/weekly-backup.log 2>&1
+
+<span class="cm"># Monthly root hints refresh — 1st of month 5AM</span>
+0 5 1 * * /usr/local/bin/refresh-root-hints.sh >> /var/log/root-hints.log 2>&1</pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TROUBLESHOOTING -->
+<section id="troubleshooting">
+  <div class="wrap">
+    <div class="section-label">03 — Problem Solving</div>
+    <h2>Troubleshooting Log</h2>
+    <p>Real issues encountered during deployment and how they were diagnosed and resolved.</p>
+
+    <div class="issue-list">
+      <div class="issue-card">
+        <div class="issue-dot dot-red"></div>
+        <div class="issue-content">
+          <div class="issue-title">Unbound failed to start after adding forward-zone</div>
+          <div class="issue-desc">Three root causes identified via unbound-checkconf: (1) do-not-query-localhost blocking loopback forwarding to Stubby, (2) auto-trust-anchor-file conflicting with a default system config file, (3) resulting corrupt root.key file.</div>
+          <div class="issue-resolution">→ Removed conflicting config file, added do-not-query-localhost: no, deleted corrupt key</div>
+        </div>
+      </div>
+      <div class="issue-card">
+        <div class="issue-dot dot-red"></div>
+        <div class="issue-content">
+          <div class="issue-title">Pi-hole web dashboard not loading</div>
+          <div class="issue-desc">UFW was blocking port 80 — the firewall rules only opened ports 22 and 53 during initial setup. Confirmed via curl from the Pi itself — port 80 was responding locally but not from LAN clients.</div>
+          <div class="issue-resolution">→ Added UFW rule: allow from 192.168.0.0/24 to any port 80</div>
+        </div>
+      </div>
+      <div class="issue-card">
+        <div class="issue-dot dot-amber"></div>
+        <div class="issue-content">
+          <div class="issue-title">Tailscale subnet routing failing silently</div>
+          <div class="issue-desc">Tailscale reported successful connection but subnet routing did not work. IP forwarding had not been enabled (was part of the skipped WireGuard phase). Tailscale also requires explicit subnet approval in the admin console — the CLI command alone is insufficient.</div>
+          <div class="issue-resolution">→ Enabled net.ipv4.ip_forward and net.ipv6.conf.all.forwarding in sysctl; approved routes in admin console</div>
+        </div>
+      </div>
+      <div class="issue-card">
+        <div class="issue-dot dot-amber"></div>
+        <div class="issue-content">
+          <div class="issue-title">Encrypted DNS not visible on first tcpdump check</div>
+          <div class="issue-desc">Port 853 showed no traffic on initial capture. Unbound's cache was serving all recent queries without hitting Stubby. The check required forcing an uncached lookup to generate fresh upstream traffic.</div>
+          <div class="issue-resolution">→ Used dig against a previously unresolved domain to bypass cache; port 853 traffic confirmed immediately</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results">
+  <div class="wrap">
+    <div class="section-label">04 — Outcomes</div>
+    <h2>Results & Validation</h2>
+
+    <div class="results-grid">
+      <div class="result-card highlight">
+        <div class="result-icon">🔒</div>
+        <div class="result-title">Zero plaintext DNS egress</div>
+        <div class="result-desc">tcpdump on port 53 shows no outbound traffic to internet. All upstream queries exit on port 853 over TLS.</div>
+      </div>
+      <div class="result-card highlight">
+        <div class="result-icon">🛡</div>
+        <div class="result-title">Network-wide ad blocking</div>
+        <div class="result-desc">All home devices — TVs, phones, IoT — filtered without individual configuration.</div>
+      </div>
+      <div class="result-card highlight">
+        <div class="result-icon">✅</div>
+        <div class="result-title">DNSSEC validated</div>
+        <div class="result-desc">Confirmed with dig — invalid DNSSEC domains return SERVFAIL, valid domains resolve normally.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">🌐</div>
+        <div class="result-title">Remote access active</div>
+        <div class="result-desc">Tailscale mesh VPN provides access to Pi and full LAN from any device without port forwarding.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">⚙️</div>
+        <div class="result-title">Fully automated maintenance</div>
+        <div class="result-desc">Weekly system updates, Pi-hole blocklist refresh, and config backups with 30-day retention.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">💾</div>
+        <div class="result-title">35% disk utilization</div>
+        <div class="result-desc">Running from USB SSD — significantly better longevity than SD card for a write-active server workload.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3>Verification commands used</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <span class="code-lang">bash — validation suite</span>
+      </div>
+      <pre><span class="cm"># Confirm no plaintext DNS leaving the machine</span>
+sudo tcpdump -i eth0 -n port 53      <span class="cm"># should show only LAN traffic</span>
+sudo tcpdump -i eth0 -n port 853     <span class="cm"># should show encrypted TLS to upstream</span>
+
+<span class="cm"># DNSSEC validation tests</span>
+dig dnssec-failed.org @127.0.0.1          <span class="cm"># must return SERVFAIL</span>
+dig sigok.verteiltesysteme.net @127.0.0.1 <span class="cm"># must return NOERROR</span>
+
+<span class="cm"># Full stack health check</span>
+sudo /usr/local/bin/pi-health.sh
+
+<span class="cm"># Live query log</span>
+sudo pihole -t</pre>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="wrap">
+    <div class="section-label">05 — Skills Demonstrated</div>
+    <h2>Technical Areas</h2>
+    <div class="skills-grid">
+      <div class="skill-group">
+        <div class="skill-group-title">Linux Administration</div>
+        <ul class="skill-list">
+          <li>Debian/Raspberry Pi OS configuration</li>
+          <li>Systemd service management</li>
+          <li>UFW / iptables firewall rules</li>
+          <li>Cron job scheduling</li>
+          <li>sysctl kernel parameters</li>
+          <li>Shell scripting (bash)</li>
+        </ul>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title">Networking & DNS</div>
+        <ul class="skill-list">
+          <li>DNS stack design and layering</li>
+          <li>DNS-over-TLS (DoT) protocol</li>
+          <li>DNSSEC validation</li>
+          <li>QNAME minimisation</li>
+          <li>Static IP and DHCP configuration</li>
+          <li>Packet capture and analysis</li>
+        </ul>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title">Security</div>
+        <ul class="skill-list">
+          <li>Network traffic encryption</li>
+          <li>Firewall hardening (LAN-only rules)</li>
+          <li>Brute force mitigation (Fail2ban)</li>
+          <li>Blocklist-based filtering</li>
+          <li>ISP DNS leak prevention</li>
+          <li>Attack surface minimization</li>
+        </ul>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title">Tools & Technologies</div>
+        <ul class="skill-list">
+          <li>Pi-hole, Unbound, Stubby</li>
+          <li>Tailscale mesh VPN</li>
+          <li>tcpdump, dig, nslookup</li>
+          <li>UFW, ethtool, sysctl</li>
+          <li>Fail2ban</li>
+          <li>SSH remote administration</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">Privacy Pi — Home Network DNS Gateway</div>
+    <div class="footer-right"><a href="https://chadmann22.github.io">← Back to portfolio</a></div>
+  </div>
+</footer>
+
+<script>
+function togglePhase(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>
