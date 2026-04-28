@@ -479,14 +479,14 @@ disk_used_pct, cpu_temp_c, uptime_days</pre>
           </div>
           <div class="code-block">
             <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">pi-backup-remote.sh — transfer step</span></div>
-            <pre><span class="cm"># Verify adminlab is reachable in the tailnet</span>
-<span class="kw">if</span> ! sudo -u pi tailscale status 2>/dev/null | grep -q <span class="str">"adminlab"</span>; then
-    echo <span class="str">"ERROR: adminlab not found in Tailscale status."</span>
+            <pre><span class="cm"># Verify [LAPTOP_NAME] is reachable in the tailnet</span>
+<span class="kw">if</span> ! sudo -u pi tailscale status 2>/dev/null | grep -q <span class="str">"[LAPTOP_NAME]"</span>; then
+    echo <span class="str">"ERROR: [LAPTOP_NAME] not found in Tailscale status."</span>
     exit 1
 <span class="kw">fi</span>
 
 <span class="cm"># Send via Taildrop — file arrives in Downloads on laptop</span>
-sudo -u pi tailscale file cp <span class="str">"$TARGET"</span> <span class="str">"adminlab:"</span></pre>
+sudo -u pi tailscale file cp <span class="str">"$TARGET"</span> <span class="str">"[LAPTOP_NAME]:"</span></pre>
           </div>
           <div class="callout">
             The backup includes all config files, scripts, aliases, and service unit overrides — everything needed to restore a working Privacy Pi from scratch. The snapshot is deleted from the Pi after a confirmed successful transfer.
@@ -637,7 +637,7 @@ sudo -u pi tailscale file cp <span class="str">"$TARGET"</span> <span class="str
       <tr><td>pi-update</td><td>Run system updates manually</td></tr>
       <tr><td>pi-backup</td><td>Run local config backup</td></tr>
       <tr><td>pi-backup-list</td><td>List stored local backups</td></tr>
-      <tr><td>pi-backup-remote</td><td>Create snapshot and send to adminlab via Taildrop</td></tr>
+      <tr><td>pi-backup-remote</td><td>Create snapshot and send to [LAPTOP_NAME] via Taildrop</td></tr>
       <tr><td>pi-report</td><td>Send weekly analytics report now</td></tr>
       <tr><td>pi-report-log</td><td>View report send history</td></tr>
       <tr><td>pi-metrics</td><td>View full CSV metrics history</td></tr>
