@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Sam — AI-Assisted Infrastructure Operations | Chad Mann</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #f7f8f9;
+  --surface:   #ffffff;
+  --border:    #dde1e7;
+  --border-lt: #eef0f3;
+  --text:      #141b27;
+  --text2:     #4b5563;
+  --text3:     #94a3b8;
+  --green:     #2a7f62;
+  --green-dim: rgba(42,127,98,0.08);
+  --green-lt:  #f0f9f5;
+  --blue:      #2f5fa3;
+  --blue-dim:  rgba(47,95,163,0.07);
+  --amber:     #b45309;
+  --amber-dim: rgba(180,83,9,0.07);
+  --red:       #be2f2f;
+  --mono: 'JetBrains Mono', monospace;
+  --body: 'Onest', sans-serif;
+  --display: 'Bricolage Grotesque', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,248,249,0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  max-width: 940px; margin: 0 auto; padding: 0 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+}
+.nav-back {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); text-decoration: none;
+  letter-spacing: 0.06em;
+  display: flex; align-items: center; gap: 6px;
+  transition: color 0.15s;
+}
+.nav-back:hover { color: var(--green); }
+.nav-right { display: flex; gap: 1.5rem; list-style: none; }
+.nav-right a {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); text-decoration: none;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  transition: color 0.15s;
+}
+.nav-right a:hover { color: var(--green); }
+@media (max-width: 640px) { .nav-right { display: none; } }
+
+/* LAYOUT */
+.wrap { max-width: 940px; margin: 0 auto; padding: 0 2.5rem; }
+@media (max-width: 640px) { .wrap { padding: 0 1.5rem; } }
+
+/* HERO */
+.hero { padding: 5rem 0 4rem; border-bottom: 1px solid var(--border); }
+.hero-breadcrumb {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); letter-spacing: 0.06em;
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-breadcrumb a { color: var(--text3); text-decoration: none; }
+.hero-breadcrumb a:hover { color: var(--green); }
+.hero-breadcrumb span { color: var(--border); }
+.hero-type {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--green); letter-spacing: 0.1em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 1.25rem;
+}
+.hero-type::before { content: ''; width: 20px; height: 1px; background: var(--green); }
+h1 {
+  font-family: var(--display);
+  font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 500;
+  line-height: 1.15; letter-spacing: -0.03em;
+  color: var(--text); margin-bottom: 1.25rem;
+}
+.hero-sub {
+  font-size: 1.05rem; color: var(--text2);
+  max-width: 620px; line-height: 1.75; font-weight: 300;
+  margin-bottom: 2rem;
+}
+.badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2.5rem; }
+.badge {
+  font-family: var(--mono); font-size: 10px;
+  padding: 4px 10px; border-radius: 2px; letter-spacing: 0.04em;
+}
+.badge-green { color: var(--green); background: var(--green-dim); border: 1px solid rgba(42,127,98,0.2); }
+.badge-blue  { color: var(--blue);  background: var(--blue-dim);  border: 1px solid rgba(47,95,163,0.2); }
+.badge-gray  { color: var(--text3); background: var(--surface);   border: 1px solid var(--border); }
+.meta-strip {
+  display: flex; gap: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden; flex-wrap: wrap;
+}
+.meta-item { padding: 0.75rem 1.25rem; border-right: 1px solid var(--border); flex: 1; min-width: 120px; }
+.meta-item:last-child { border-right: none; }
+.meta-label { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+.meta-value { font-size: 13px; color: var(--text2); font-weight: 400; }
+.meta-value.live { color: var(--green); font-weight: 500; }
+
+/* SECTIONS */
+section { padding: 4rem 0; border-bottom: 1px solid var(--border); }
+section:last-child { border-bottom: none; }
+.section-label { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+h2 { font-family: var(--display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; color: var(--text); margin-bottom: 1.5rem; }
+h3 { font-family: var(--display); font-size: 1rem; font-weight: 500; color: var(--text); margin-bottom: 0.6rem; }
+p { color: var(--text2); font-weight: 300; margin-bottom: 1rem; }
+p:last-child { margin-bottom: 0; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+@media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+.divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+.inline-code { font-family: var(--mono); font-size: 12px; background: var(--bg); color: var(--green); border: 1px solid var(--border); padding: 1px 6px; }
+.callout { background: var(--green-lt); border: 1px solid rgba(42,127,98,0.25); border-left: 3px solid var(--green); padding: 0.85rem 1rem; margin: 1rem 0; font-size: 13px; color: var(--text2); font-weight: 300; }
+.warn-callout { background: #fffbf0; border: 1px solid rgba(180,83,9,0.2); border-left: 3px solid var(--amber); padding: 0.85rem 1rem; margin: 1rem 0; font-size: 13px; color: var(--text2); font-weight: 300; }
+
+/* ARCHITECTURE */
+.arch { background: var(--surface); border: 1px solid var(--border); padding: 2rem; margin: 2rem 0; }
+.arch-title { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.75rem; text-align: center; }
+.arch-flow { display: flex; flex-direction: column; align-items: center; }
+.arch-node {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 0.85rem 1.25rem;
+  width: 100%; max-width: 520px;
+}
+.arch-node.accent { border-color: rgba(42,127,98,0.35); background: var(--green-lt); }
+.arch-node.dim { opacity: 0.55; }
+.arch-node-left { display: flex; align-items: center; gap: 10px; }
+.arch-node-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+.arch-node-name { font-family: var(--mono); font-size: 12px; color: var(--text); }
+.arch-node-desc { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.arch-node-badge { font-family: var(--mono); font-size: 10px; color: var(--green); background: var(--green-dim); border: 1px solid rgba(42,127,98,0.2); padding: 2px 7px; white-space: nowrap; }
+.arch-arrow { width: 1px; height: 20px; background: var(--border); margin: 0 auto; position: relative; }
+.arch-arrow::after { content: '▼'; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); font-size: 8px; color: var(--green); }
+
+/* BEFORE/AFTER */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+@media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-box { background: var(--surface); border: 1px solid var(--border); padding: 1.25rem; }
+.compare-box.accent { border-color: rgba(42,127,98,0.3); }
+.compare-label { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.85rem; }
+.compare-label.green { color: var(--green); }
+.compare-flow { font-family: var(--mono); font-size: 12px; color: var(--text2); line-height: 2.2; }
+.compare-flow .note { font-size: 11px; }
+.compare-flow .note.bad { color: var(--red); }
+.compare-flow .note.good { color: var(--green); }
+
+/* PHASES */
+.phase-grid { display: flex; flex-direction: column; gap: 1px; margin-top: 1.5rem; background: var(--border); border: 1px solid var(--border); }
+.phase-card { background: var(--surface); overflow: hidden; }
+.phase-header { display: flex; align-items: center; gap: 1.25rem; padding: 1.1rem 1.5rem; cursor: pointer; user-select: none; transition: background 0.15s; }
+.phase-header:hover { background: var(--bg); }
+.phase-num { font-family: var(--mono); font-size: 10px; color: var(--text3); min-width: 56px; letter-spacing: 0.06em; }
+.phase-title { font-family: var(--display); font-size: 0.95rem; font-weight: 500; color: var(--text); flex: 1; }
+.phase-status { font-family: var(--mono); font-size: 10px; color: var(--green); background: var(--green-dim); border: 1px solid rgba(42,127,98,0.2); padding: 2px 8px; letter-spacing: 0.04em; }
+.phase-chevron { color: var(--text3); font-size: 10px; transition: transform 0.2s; }
+.phase-card.open .phase-chevron { transform: rotate(180deg); }
+.phase-body { display: none; padding: 1.5rem; border-top: 1px solid var(--border-lt); }
+.phase-card.open .phase-body { display: block; }
+.phase-body p { font-size: 14px; }
+.phase-highlights { display: flex; flex-wrap: wrap; gap: 6px; margin: 1rem 0; }
+.highlight-chip { font-family: var(--mono); font-size: 11px; color: var(--text2); background: var(--bg); border: 1px solid var(--border); padding: 3px 10px; }
+
+/* CODE BLOCKS */
+.code-block { background: #f4f5f7; border: 1px solid var(--border); overflow-x: auto; margin: 1rem 0; }
+.code-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+.code-lang { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.06em; }
+.code-dots { display: flex; gap: 5px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; }
+.dot-r { background: #e06c75; } .dot-y { background: #e5c07b; } .dot-g { background: #98c379; }
+pre { padding: 1rem; font-family: var(--mono); font-size: 12px; line-height: 1.7; color: #2d3748; white-space: pre; overflow-x: auto; }
+.kw { color: #7c3aed; } .str { color: #2a7f62; } .cm { color: #94a3b8; } .ip { color: #2563eb; } .cmd { color: #b45309; }
+
+/* ISSUE CARDS */
+.issue-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1.5rem; }
+.issue-card { background: var(--surface); padding: 1.1rem 1.5rem; display: flex; gap: 1rem; align-items: flex-start; }
+.issue-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.dot-red { background: var(--red); } .dot-amber { background: var(--amber); } .dot-green-s { background: var(--green); }
+.issue-content { flex: 1; }
+.issue-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.issue-desc { font-size: 12px; color: var(--text3); line-height: 1.55; font-family: var(--mono); }
+.issue-resolution { font-family: var(--mono); font-size: 11px; color: var(--green); margin-top: 5px; }
+
+/* RESULTS GRID */
+.results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1.5rem; }
+.result-card { background: var(--surface); padding: 1.25rem; }
+.result-card.highlight { background: var(--green-lt); }
+.result-icon { font-size: 1.1rem; margin-bottom: 0.5rem; }
+.result-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.result-desc { font-size: 12px; color: var(--text3); line-height: 1.5; font-weight: 300; }
+
+/* LESSONS */
+.lessons-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1.5rem; }
+.lesson-card { background: var(--surface); padding: 1.5rem; display: grid; grid-template-columns: 200px 1fr; gap: 2rem; align-items: start; }
+@media (max-width: 640px) { .lesson-card { grid-template-columns: 1fr; gap: 0.75rem; } }
+.lesson-left { }
+.lesson-num { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+.lesson-title { font-family: var(--display); font-size: 0.95rem; font-weight: 500; color: var(--text); line-height: 1.3; }
+.lesson-body { font-size: 13px; color: var(--text2); font-weight: 300; line-height: 1.75; }
+
+/* FOOTER */
+footer { padding: 2.25rem 0; border-top: 1px solid var(--border); }
+.footer-inner { max-width: 940px; margin: 0 auto; padding: 0 2.5rem; display: flex; align-items: center; justify-content: space-between; }
+.footer-left { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.footer-right { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.footer-right a { color: var(--text3); text-decoration: none; }
+.footer-right a:hover { color: var(--green); }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-back" href="https://chadmann22.github.io">← chadmann22.github.io</a>
+    <ul class="nav-right">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#implementation">Build</a></li>
+      <li><a href="#troubleshooting">Issues</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#lessons">Lessons</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-breadcrumb">
+      <a href="https://chadmann22.github.io">Portfolio</a>
+      <span>/</span>
+      Project Sam
+    </div>
+    <div class="hero-type">AI Operations Project</div>
+    <h1>Project Sam<br>AI-Assisted Infrastructure Operations</h1>
+    <p class="hero-sub">
+      A persistent AI systems engineer built on the Hermes agent framework — iteratively 
+      developed to manage, audit, document, and maintain a Raspberry Pi home lab through 
+      documentation-first knowledge architecture, session continuity, and autonomous 
+      task execution on production infrastructure.
+    </p>
+    <div class="badge-row">
+      <span class="badge badge-green">Hermes Agent</span>
+      <span class="badge badge-green">Docker</span>
+      <span class="badge badge-green">SOUL.md</span>
+      <span class="badge badge-blue">Prompt Engineering</span>
+      <span class="badge badge-blue">Operational Architecture</span>
+      <span class="badge badge-gray">Bash scripting</span>
+      <span class="badge badge-gray">SSH automation</span>
+      <span class="badge badge-gray">Linux</span>
+      <span class="badge badge-gray">Documentation Systems</span>
+    </div>
+    <div class="meta-strip">
+      <div class="meta-item">
+        <div class="meta-label">Framework</div>
+        <div class="meta-value">Hermes (NousResearch)</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Managed System</div>
+        <div class="meta-value">Raspberry Pi 4 DNS Gateway</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Status</div>
+        <div class="meta-value live">● Active Development</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Type</div>
+        <div class="meta-value">AI Ops / Infrastructure</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="wrap">
+    <div class="section-label">00 — Overview</div>
+    <h2>Project Summary</h2>
+    <div class="two-col">
+      <div>
+        <p>The challenge with AI agents in operational roles is not intelligence — it is consistency. A language model without structured memory re-investigates what it already documented, forgets decisions, loses track of what changed and why, and produces different answers to the same question across sessions.</p>
+        <p>Project Sam addresses this directly. Built on the Hermes agent framework and running in a Docker container on an Ubuntu workstation, Sam is a persistent AI systems engineer with SSH access to a Raspberry Pi 4 home lab. The goal was not to deploy a chatbot for infrastructure questions — it was to design an operational agent capable of maintaining institutional knowledge, following documented procedures, and executing autonomous work on production systems.</p>
+      </div>
+      <div>
+        <p>The architecture centers on a documentation-first principle: before investigating any question, Sam consults existing documentation. A structured knowledge base — operational ledger, risk register, service inventory, configuration baselines, decision log, change history — is the primary source of truth. Live investigation is a last resort, not a first instinct.</p>
+        <p>Session continuity is solved through a snapshot system and a mandatory session start procedure. Every new session begins by loading the most recent snapshot, the tool registry, and the service inventory before accepting any work. This gives every session the same operational context regardless of how or why the previous session ended.</p>
+      </div>
+    </div>
+    <div class="callout">
+      <strong style="color: var(--text); font-weight: 500;">Managed infrastructure:</strong> Sam administers the Privacy Pi gateway — a Raspberry Pi 4 running Pi-hole, Unbound, Stubby, Tailscale, and Monit. She performs service audits, verifies configuration drift, executes maintenance tasks, and documents all operational activity in a persistent knowledge base.
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="wrap">
+    <div class="section-label">01 — Architecture</div>
+    <h2>Operational Knowledge Hierarchy</h2>
+    <p>Before answering any operational question or beginning any task, Sam consults sources in a defined order. The hierarchy enforces documentation-first behavior and ensures live investigation is only performed when existing records are insufficient.</p>
+
+    <div class="arch">
+      <div class="arch-title">Authority hierarchy — consulted in order before any investigation</div>
+      <div class="arch-flow">
+        <div class="arch-node accent">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">👤</div>
+            <div>
+              <div class="arch-node-name">SOUL.md</div>
+              <div class="arch-node-desc">Core identity, authority, session start procedure</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">always loaded</span>
+        </div>
+        <div class="arch-arrow"></div>
+        <div class="arch-node accent">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">📋</div>
+            <div>
+              <div class="arch-node-name">Operational Reasoning Policy</div>
+              <div class="arch-node-desc">Documentation-first rules, drift detection, context efficiency</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">on session start</span>
+        </div>
+        <div class="arch-arrow"></div>
+        <div class="arch-node">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">🗂</div>
+            <div>
+              <div class="arch-node-name">Tool Registry + Documentation Index</div>
+              <div class="arch-node-desc">Capability catalog and navigation map for all knowledge</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">on session start</span>
+        </div>
+        <div class="arch-arrow"></div>
+        <div class="arch-node">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">📄</div>
+            <div>
+              <div class="arch-node-name">Operational Records</div>
+              <div class="arch-node-desc">Service inventory, risk register, change history, decision log</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">on demand</span>
+        </div>
+        <div class="arch-arrow"></div>
+        <div class="arch-node">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">⚙️</div>
+            <div>
+              <div class="arch-node-name">Skills &amp; Playbooks</div>
+              <div class="arch-node-desc">Reusable procedures for recurring operational tasks</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">on demand</span>
+        </div>
+        <div class="arch-arrow"></div>
+        <div class="arch-node dim">
+          <div class="arch-node-left">
+            <div class="arch-node-icon">🔍</div>
+            <div>
+              <div class="arch-node-name">Live Investigation</div>
+              <div class="arch-node-desc">SSH to Pi — only when existing records are insufficient</div>
+            </div>
+          </div>
+          <span class="arch-node-badge">last resort</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3>Stateless assistant vs. Sam</h3>
+    <p>The difference in operational behavior between a stock AI assistant and Sam is architectural, not a matter of model capability.</p>
+
+    <div class="compare-grid">
+      <div class="compare-box">
+        <div class="compare-label">Stateless assistant</div>
+        <div class="compare-flow">
+          New session<br>
+          → No memory of prior work<br>
+          → Re-investigates known facts<br>
+          → No change tracking<br>
+          → No audit trail<br>
+          <span class="note bad">✗ Same mistakes repeated session to session</span>
+        </div>
+      </div>
+      <div class="compare-box accent">
+        <div class="compare-label green">Sam with operational architecture</div>
+        <div class="compare-flow">
+          New session<br>
+          → Load snapshot, tool registry, inventory<br>
+          → Consult docs before investigating<br>
+          → Update ledger on every change<br>
+          → Document decisions and rationale<br>
+          <span class="note good">✓ Knowledge improves across sessions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3>Knowledge base structure</h3>
+    <p>All operational knowledge lives at <span class="inline-code">/opt/data/</span> — a persistent Docker volume mounted from <span class="inline-code">~/.hermes</span> on the host. This volume survives all container restarts. Sam always has access to the full knowledge base regardless of session history.</p>
+
+    <div class="code-block">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">/opt/data — knowledge base layout</span></div>
+      <pre><span class="kw">SOUL.md</span>                    <span class="cm"># Identity, authority, session start</span>
+<span class="kw">index.md</span>                   <span class="cm"># Navigation map for all documentation</span>
+<span class="kw">tool_registry.md</span>           <span class="cm"># Capability catalog with routing guide</span>
+<span class="kw">service_inventory.md</span>       <span class="cm"># Running services, ports, status</span>
+<span class="kw">operational_reasoning_policy.md</span>  <span class="cm"># Documentation-first rules</span>
+<span class="kw">operations_ledger.md</span>       <span class="cm"># Append-only record of all operations</span>
+<span class="kw">change_history.md</span>          <span class="cm"># Summary of significant changes</span>
+<span class="kw">risk_register.md</span>           <span class="cm"># Known risks, mitigations, status</span>
+<span class="kw">decisions.md</span>               <span class="cm"># Durable decisions and rationale</span>
+<span class="kw">network_map.md</span>             <span class="cm"># IPs, devices, listening ports</span>
+<span class="kw">dependency_map.md</span>          <span class="cm"># Service dependency relationships</span>
+<span class="kw">architecture.md</span>            <span class="cm"># System overview and trust boundaries</span>
+<span class="kw">baselines/</span>                 <span class="cm"># Configuration snapshots for drift detection</span>
+<span class="kw">snapshots/</span>                 <span class="cm"># Session continuity snapshots</span>
+<span class="kw">skills/</span>                    <span class="cm"># Reusable procedures for recurring tasks</span>
+<span class="kw">playbooks/</span>                 <span class="cm"># SOPs for specific operational scenarios</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- IMPLEMENTATION -->
+<section id="implementation">
+  <div class="wrap">
+    <div class="section-label">02 — Implementation</div>
+    <h2>Iterative Development</h2>
+    <p>Sam was not deployed once and left static. Each capability was added in response to observed limitations, debugged against real behavior, and validated before moving to the next layer.</p>
+
+    <div class="phase-grid">
+
+      <div class="phase-card open">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 1</span>
+          <span class="phase-title">Container Setup & Core Identity</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Sam runs as a named Docker container (<span class="inline-code">sam-agent</span>) on an Ubuntu workstation, using <span class="inline-code">nousresearch/hermes-agent:latest</span>. A persistent volume mounts <span class="inline-code">~/.hermes</span> from the host to <span class="inline-code">/opt/data</span> inside the container — all operational knowledge survives restarts. The SSH key for Pi access lives at <span class="inline-code">/opt/data/hermes_pi_key</span>, and the Pi user was configured with <span class="inline-code">NOPASSWD</span> sudo to allow non-interactive remote commands.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">nousresearch/hermes-agent:latest</span>
+            <span class="highlight-chip">Persistent /opt/data volume</span>
+            <span class="highlight-chip">SSH key for Pi access</span>
+            <span class="highlight-chip">NOPASSWD sudo on Pi</span>
+            <span class="highlight-chip">-w /opt/data working directory</span>
+          </div>
+          <p><strong style="color: var(--text); font-weight: 500;">SOUL.md structure:</strong> The initial SOUL.md draft had structural problems — the session start procedure was nested inside the Mission section, and autonomy directives floated without a header. These were corrected into dedicated sections: Identity, Mission, Session Start, Authority, Operational Reasoning, Style, Avoid. This separation matters: each section now has a clear purpose and can be updated independently.</p>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">hermes() — shell function for container management</span></div>
+            <pre><span class="kw">hermes</span>() {
+  <span class="kw">if</span> [ "$(sudo docker ps -q -f name=sam-agent)" ]; then
+    <span class="cm"># Container running — reconnect</span>
+    sudo docker exec -it sam-agent hermes
+  <span class="kw">elif</span> [ "$(sudo docker ps -aq -f status=exited -f name=sam-agent)" ]; then
+    <span class="cm"># Container stopped — restart</span>
+    sudo docker start -ai sam-agent
+  <span class="kw">else</span>
+    <span class="cm"># Fresh start</span>
+    sudo docker run -it --name sam-agent \
+      <span class="kw">-w /opt/data</span> \
+      -e HERMES_HOME=/opt/data \
+      --env-file ~/.hermes/.env \
+      -v ~/.hermes:/opt/data \
+      nousresearch/hermes-agent:latest hermes
+  <span class="kw">fi</span>
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 2</span>
+          <span class="phase-title">Session Continuity System</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>Context resets are a fundamental challenge for agents in long-running operational roles. Two distinct reset types were identified and handled differently.</p>
+          <p><span class="inline-code">/new</span> (conversation reset) clears chat context only. The container keeps running, all tools and state remain intact, and the working directory is preserved. This is the correct choice mid-session.</p>
+          <p>Container restart performs a full teardown. Any in-container state that is not on the mounted volume is lost. Required when the Docker run command itself changes (adding <span class="inline-code">-w /opt/data</span>, changing environment variables, etc.).</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">Session snapshots at /opt/data/snapshots/</span>
+            <span class="highlight-chip">ls -t | head -1 to find latest</span>
+            <span class="highlight-chip">4-step session start procedure</span>
+            <span class="highlight-chip">/new vs container restart distinction</span>
+          </div>
+          <p>Both reset types lose conversational context, which the snapshot system handles. A session snapshot captures operational state at end-of-session: current tasks, recent changes, system status, decisions made. On every new session, Sam loads the most recent snapshot before accepting work — giving every session the same starting context regardless of what caused the reset.</p>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">SOUL.md — session start section</span></div>
+            <pre><span class="kw"># Session Start</span>
+On every new session, before accepting work:
+<span class="str">1.</span> Run: <span class="cmd">ls -t /opt/data/snapshots/ | head -1</span> to identify the
+   most recent snapshot, then read that file
+<span class="str">2.</span> Read <span class="ip">/opt/data/tool_registry.md</span> to restore awareness of
+   available capabilities
+<span class="str">3.</span> Read <span class="ip">/opt/data/service_inventory.md</span> for current system state
+<span class="str">4.</span> Confirm readiness</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 3</span>
+          <span class="phase-title">Knowledge Architecture</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>The knowledge base was built out across multiple documents, each with a distinct purpose and clear scope. The goal was to eliminate re-investigation — if a question has been answered before, the answer should be retrievable, not rediscovered.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">index.md — documentation navigation map</span>
+            <span class="highlight-chip">tool_registry.md — capability catalog</span>
+            <span class="highlight-chip">operations_ledger.md — append-only record</span>
+            <span class="highlight-chip">risk_register.md — known risks and mitigations</span>
+            <span class="highlight-chip">decisions.md — architectural decisions</span>
+            <span class="highlight-chip">baselines/ — configuration drift reference</span>
+          </div>
+          <p>The <span class="inline-code">index.md</span> file acts as a documentation router — it answers "where should I look first?" for any operational question. The tool registry complements this by cataloging capabilities: what skills exist, what they do, and when to use them. Together, these two files are the first stop before any investigation.</p>
+          <p>The configuration baselines directory stores snapshots of critical service configurations. When a service behaves unexpectedly, Sam compares the live configuration against the baseline before touching anything — a practice that caught a real Unbound log permission error during capability testing and provided the fix path.</p>
+          <div class="callout">
+            <strong style="color: var(--text); font-weight: 500;">Documentation maintenance rules:</strong> New operational documents must be added to the index on creation. New skills must be cataloged in the tool registry. Obsolete documents are marked, not silently deleted — they may contain historical context. The index is the first file updated when anything changes.
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 4</span>
+          <span class="phase-title">Operational Reasoning Policy</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>A structured operational reasoning policy was created as a standalone file at <span class="inline-code">/opt/data/operational_reasoning_policy.md</span>. Keeping it separate from SOUL.md means it can be updated without modifying the core identity document. SOUL.md references it with a single line: <span class="inline-code">Read and apply /opt/data/operational_reasoning_policy.md for all operational work.</span></p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">Authority hierarchy (8 levels)</span>
+            <span class="highlight-chip">Mandatory reasoning summary format</span>
+            <span class="highlight-chip">Configuration drift detection requirement</span>
+            <span class="highlight-chip">Context efficiency policy</span>
+            <span class="highlight-chip">Knowledge preservation requirement</span>
+          </div>
+          <p>The policy requires a reasoning summary before any substantial task — investigation, audit, change request, or incident response. This summary must identify the request type, relevant artifacts, relevant skills, authoritative sources, and reason for selection. It serves two purposes: it forces Sam to demonstrate that appropriate documentation was consulted before acting, and it creates a reviewable record of her operational decision-making.</p>
+          <div class="code-block">
+            <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">Operational Reasoning Summary — required format</span></div>
+            <pre><span class="kw">Operational Reasoning Summary</span>
+
+Request Type:       Investigation (Unbound log permission error)
+Relevant Artifacts: /opt/data/risk_register.md
+                    /opt/data/baselines/unbound_2026-06-17.conf
+                    /opt/data/service_inventory.md
+Relevant Skills:    pi-connection, configuration-drift-audit
+Authoritative Sources: risk_register.md (open item), live systemctl
+                       and journalctl after baseline consulted
+Reason For Selection: Risk register contains the documented item.
+                      Baseline provides reference config. Live
+                      verification confirms scope before applying fix.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 5</span>
+          <span class="phase-title">SSH Standardization &amp; Skill Correction</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>All Pi connections are standardized through a Pi Connection skill that uses <span class="inline-code">ssh -F /opt/data/ssh_config pi "&lt;command&gt;"</span>. This keeps the SSH configuration in one place and abstracts connection details from operational commands.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">ssh -F /opt/data/ssh_config pi</span>
+            <span class="highlight-chip">Pi Connection skill as canonical method</span>
+            <span class="highlight-chip">SOUL.md one-liner as enforcement override</span>
+            <span class="highlight-chip">ssh-remote-management skill corrected</span>
+          </div>
+          <p>Sam repeatedly reverted to constructing ad-hoc SSH strings (<span class="inline-code">ssh -i /opt/data/hermes_pi_key -o StrictHostKeyChecking=no pi@[IP]</span>) despite explicit corrections. Three recurrences prompted a root-cause investigation that traced the problem to a pre-existing skill file: <span class="inline-code">ssh-remote-management</span>, written before the Pi Connection skill existed, contained the old command template throughout its examples. Because the skill was detailed and domain-specific, it consistently overrode the general directive in SOUL.md.</p>
+          <p>The correct fix was not to repeat the instruction more emphatically — it was to correct the source. The ssh-remote-management skill was updated to reference the Pi Connection skill for all connection templates, and a one-liner was added to SOUL.md as a session-level enforcement override. The combination eliminated the reversion.</p>
+          <div class="callout">
+            <strong style="color: var(--text); font-weight: 500;">Key insight:</strong> When an agent exhibits persistent non-compliance with a directive, the directive is rarely the problem. The more likely cause is a competing, more specific knowledge source overriding it. Fix the source, not the instruction.
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-num">Phase 6</span>
+          <span class="phase-title">Capability Validation — Five-Tier Testing</span>
+          <span class="phase-status">Complete</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <p>A five-tier testing framework was used to validate Sam's capabilities with progressively increasing complexity and autonomy. Each tier targeted a specific behavioral requirement and surfaced distinct failure modes.</p>
+          <div class="phase-highlights">
+            <span class="highlight-chip">Tier 1: Documentation navigation</span>
+            <span class="highlight-chip">Tier 2: Live Pi investigation</span>
+            <span class="highlight-chip">Tier 3: Baseline drift comparison</span>
+            <span class="highlight-chip">Tier 4: Ambiguous open-ended investigation</span>
+            <span class="highlight-chip">Tier 5: Autonomous work with documentation</span>
+          </div>
+          <p><strong style="color: var(--text); font-weight: 500;">Tier 1</strong> (navigation and retrieval) passed without issues — Sam consulted docs before SSHing to the Pi.</p>
+          <p><strong style="color: var(--text); font-weight: 500;">Tier 2</strong> (live investigation) revealed that Sam attempted to run <span class="inline-code">pi-dns-check</span> as a remote shell command — a command that does not exist. She had jumped to action without consulting the tool registry first. She recovered by manually checking service status, and the issue was documented in the service inventory.</p>
+          <p><strong style="color: var(--text); font-weight: 500;">Tier 3</strong> (drift comparison) passed cleanly — Sam consulted the baseline, compared it to live Unbound configuration, and confirmed no drift.</p>
+          <p><strong style="color: var(--text); font-weight: 500;">Tier 4</strong> (ambiguous: "something feels slow on the network, investigate") produced a solid diagnostic but was missing the mandatory operational reasoning summary before work began. Sam was asked to produce it retroactively, did so correctly, and behavior improved on subsequent tasks.</p>
+          <p><strong style="color: var(--text); font-weight: 500;">Tier 5</strong> (autonomous work) was the most significant test. Sam was given a real open risk-register item — an Unbound log permission error found during Tier 2 testing — and told to investigate, resolve it, document the fix, and close the risk item without hand-holding. She produced the reasoning summary, connected to the Pi via the correct method, identified the permission error, applied the fix, verified the service recovered, updated the operations ledger and change history, and provided honest completion evidence. This was a real production fix on a live system, executed autonomously from start to documentation.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TROUBLESHOOTING -->
+<section id="troubleshooting">
+  <div class="wrap">
+    <div class="section-label">03 — Problem Solving</div>
+    <h2>Troubleshooting Log</h2>
+    <p>Failures encountered during development and the root causes behind them. Most were not reasoning failures — they were retrieval and configuration failures.</p>
+
+    <div class="issue-list">
+
+      <div class="issue-card">
+        <div class="issue-dot dot-red"></div>
+        <div class="issue-content">
+          <div class="issue-title">Session start reading wrong SOUL.md — wrong working directory</div>
+          <div class="issue-desc">On first launch, Sam started in the Hermes container default working directory rather than /opt/data. She loaded the framework's default SOUL.md instead of the custom one, initializing with the wrong identity and no knowledge of the knowledge base.</div>
+          <div class="issue-resolution">→ Added -w /opt/data to the docker run command. The flag is the difference between the correct and incorrect startup — a single missing argument.</div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-dot dot-red"></div>
+        <div class="issue-content">
+          <div class="issue-title">SSH string reversion — three separate corrections, same root cause</div>
+          <div class="issue-desc">Sam repeatedly reverted to ad-hoc SSH strings despite explicit instruction to use the Pi Connection skill. Traced after the third recurrence to a pre-existing ssh-remote-management skill file containing the old command template in every example. The skill's specificity and domain match made it override the general SOUL.md directive consistently.</div>
+          <div class="issue-resolution">→ Updated ssh-remote-management skill to reference Pi Connection for all SSH operations. Added one-liner to SOUL.md as a session-level override. Both together eliminated the reversion — neither alone was sufficient.</div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-dot dot-amber"></div>
+        <div class="issue-content">
+          <div class="issue-title">pi-dns-check executed as remote shell command — command does not exist</div>
+          <div class="issue-desc">During live DNS verification, Sam attempted to run pi-dns-check on the Pi as if it were a shell alias. The command does not exist. She had not consulted the tool registry or service inventory before acting, and filled the knowledge gap with a plausible guess.</div>
+          <div class="issue-resolution">→ Documented correct DNS verification procedure in service_inventory.md (systemctl status, dig queries, journalctl). Noted in the Tier 2 test findings that tool registry consultation must precede live action.</div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-dot dot-amber"></div>
+        <div class="issue-content">
+          <div class="issue-title">Session snapshot skill trigger phrase interpreted as programmatic invocation</div>
+          <div class="issue-desc">When asked to take a session snapshot, Sam attempted to invoke the skill using send_message and skill_run — internal tool calls — rather than executing the defined steps directly. The skill's "Trigger phrase:" language was misread as a function signature rather than as a conversational cue.</div>
+          <div class="issue-resolution">→ Rewrote the skill invocation section: "Execute the steps below directly using available tools. Do not attempt to call this skill programmatically or via send_message." The manual fallback path she eventually used was the correct one — it just needed to be documented as the first approach.</div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-dot dot-amber"></div>
+        <div class="issue-content">
+          <div class="issue-title">Operational reasoning summary absent from ambiguous investigation</div>
+          <div class="issue-desc">A Tier 4 open-ended investigation ("something feels slow on the network") began immediately without the required reasoning summary. Sam read the correct documents and ran appropriate checks, but skipped the explicit summary that the operational policy requires before investigations.</div>
+          <div class="issue-resolution">→ Retroactive summary was requested and produced correctly, demonstrating the knowledge was there. Behavior improved in subsequent investigations. The retroactive exercise reinforced the habit more effectively than a direct correction would have.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results">
+  <div class="wrap">
+    <div class="section-label">04 — Outcomes</div>
+    <h2>Results &amp; Validation</h2>
+
+    <div class="results-grid">
+      <div class="result-card highlight">
+        <div class="result-icon">🔄</div>
+        <div class="result-title">Session continuity confirmed</div>
+        <div class="result-desc">After container reset: four tool calls, snapshot loaded, tool registry restored, service inventory read, ready state confirmed — without any manual orientation from the operator.</div>
+      </div>
+      <div class="result-card highlight">
+        <div class="result-icon">🔧</div>
+        <div class="result-title">Autonomous Tier 5 pass</div>
+        <div class="result-desc">Real Unbound log permission error found during testing. Sam reasoned, SSHed correctly, applied fix, verified recovery, updated ledger and change history, and closed the risk item — end to end without hand-holding.</div>
+      </div>
+      <div class="result-card highlight">
+        <div class="result-icon">📝</div>
+        <div class="result-title">Knowledge base compounds</div>
+        <div class="result-desc">Each session adds to the ledger, refines the risk register, and corrects skills. The knowledge base after one month of operation is substantially more complete than at launch, and session consistency improves accordingly.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">🛠</div>
+        <div class="result-title">SSH behavior stable</div>
+        <div class="result-desc">After skill source correction and SOUL.md override, ad-hoc SSH strings did not recur. Skill-level corrections persist across sessions; repeating directives at the chat level does not.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">📋</div>
+        <div class="result-title">Documentation-first behavior</div>
+        <div class="result-desc">Tier 1 navigation tests (service status, risk register, change history) all passed without SSH access. Sam retrieved answers from documentation before considering investigation.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">🏗</div>
+        <div class="result-title">Production infrastructure managed</div>
+        <div class="result-desc">Sam administers a live Raspberry Pi DNS gateway serving an entire home network. Operations are not simulated — audits, fixes, and configuration changes apply to running production systems.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3>Session start — confirmed boot sequence</h3>
+    <p>After a container reset with the updated run command, Sam's session start output on first message:</p>
+    <div class="code-block">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-lang">terminal — session start output</span></div>
+      <pre><span class="cm">User: Run session start procedure.</span>
+
+<span class="kw">Initializing agent...</span>
+────────────────────────────────────────
+  ┊ 💻  <span class="cmd">ls -t /opt/data/snapshots/ | head -1</span>           <span class="str">0.1s</span>
+  ┊ 📖  <span class="ip">/opt/data/snapshots/snapshot_2026-06-17.md</span>     <span class="str">0.1s</span>
+  ┊ 📖  <span class="ip">/opt/data/tool_registry.md</span>                      <span class="str">0.1s</span>
+  ┊ 📖  <span class="ip">/opt/data/service_inventory.md</span>                  <span class="str">0.1s</span>
+────────────────────────────────────────
+
+Session start complete. Snapshot loaded, tool registry restored,
+service inventory current. Ready to proceed.</pre>
+    </div>
+    <p style="font-size: 13px; color: var(--text3); margin-top: 0.5rem; font-family: var(--mono);">Four tool calls. Full operational context. Ready — before any task is assigned.</p>
+  </div>
+</section>
+
+<!-- LESSONS LEARNED -->
+<section id="lessons">
+  <div class="wrap">
+    <div class="section-label">05 — Lessons Learned</div>
+    <h2>What Building Sam Taught Me</h2>
+    <p>These are not abstract conclusions. Each one is traceable to a specific failure, debugging session, and architectural change made in response.</p>
+
+    <div class="lessons-list">
+
+      <div class="lesson-card">
+        <div class="lesson-left">
+          <div class="lesson-num">Lesson 01</div>
+          <div class="lesson-title">Agent failures are retrieval failures, not reasoning failures</div>
+        </div>
+        <div class="lesson-body">
+          When Sam attempted to run <span class="inline-code">pi-dns-check</span> as a remote command, she was not reasoning incorrectly — she was filling a retrieval gap with a plausible guess. The model's underlying reasoning was fine. The failure was that she did not have the correct information at the moment she needed it. Most agent inconsistency I observed followed this pattern: not wrong logic, but wrong or absent inputs. This reframes the engineering problem. The work is not "make the agent smarter" — it is "ensure the right information is available and consulted at the right time."
+        </div>
+      </div>
+
+      <div class="lesson-card">
+        <div class="lesson-left">
+          <div class="lesson-num">Lesson 02</div>
+          <div class="lesson-title">Skill files compete with directives — correct at the source</div>
+        </div>
+        <div class="lesson-body">
+          The SSH reversion problem was the most instructive debugging challenge. A general directive in SOUL.md ("always connect via ssh -F ...") was repeatedly overridden by a specific, detailed skill file containing the old command template. Specificity and domain-relevance made the skill file authoritative in the agent's context, regardless of the explicit instruction. Repeating the directive louder — restating it, emphasizing it, correcting it mid-session — produced temporary compliance at best. The durable fix required updating the competing source. This has a broader implication: if an agent consistently violates an instruction, look for a more specific competing knowledge source before assuming the instruction needs to be rewritten.
+        </div>
+      </div>
+
+      <div class="lesson-card">
+        <div class="lesson-left">
+          <div class="lesson-num">Lesson 03</div>
+          <div class="lesson-title">Context is a resource to architect, not a prompt to expand</div>
+        </div>
+        <div class="lesson-body">
+          Early session start procedures tried to preload everything: full operational docs, large inventories, baselines, change history. This consumed context that should be available for actual work, and created a situation where every task started with a bloated, redundant preamble. The redesign separated always-load (snapshot, tool registry, service inventory — small, high-value) from on-demand (full docs, baselines, change history — consulted only when relevant). The documentation index and tool registry became routers pointing to the right document rather than comprehensive sources containing all information. Treating context as a finite architectural resource — something to be managed with the same discipline as memory or disk — produced a more consistent and efficient agent than any amount of prompt expansion did.
+        </div>
+      </div>
+
+      <div class="lesson-card">
+        <div class="lesson-left">
+          <div class="lesson-num">Lesson 04</div>
+          <div class="lesson-title">Documentation-first compounds — each session improves the next</div>
+        </div>
+        <div class="lesson-body">
+          The operational ledger, risk register, and service inventory are not just records — they are inputs to future sessions. When Sam documents a finding (the Unbound permission error), corrects a skill (the SSH template), or records a decision (connection method standardization), that information is available to every subsequent session without any re-investigation. After enough sessions, the knowledge base begins to anticipate questions before they are asked. This does not happen automatically with AI assistants — it requires deliberate architectural choices about what gets persisted and where. But once the infrastructure exists, the compounding effect is real and measurable: questions that took investigation in early sessions are answered from documentation in later ones.
+        </div>
+      </div>
+
+      <div class="lesson-card">
+        <div class="lesson-left">
+          <div class="lesson-num">Lesson 05</div>
+          <div class="lesson-title">Test with escalating autonomy to find failure modes before they matter</div>
+        </div>
+        <div class="lesson-body">
+          The five-tier testing framework was more useful than anticipated — not because it validated what worked, but because it surfaced what did not in a controlled, low-stakes environment. Tier 2 revealed that Sam would skip the tool registry and jump to action. Tier 4 revealed that the reasoning summary requirement was not being applied to ambiguous investigations. Tier 5 revealed that the combination of correct SSH method, proper documentation, and honest reporting was now reliable enough for autonomous production work. Finding these failure modes during capability testing meant they were corrected before they could cause problems during real operations. An agent you have not deliberately stress-tested is an agent whose failure modes you do not know.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">Project Sam — AI-Assisted Infrastructure Operations</div>
+    <div class="footer-right"><a href="https://chadmann22.github.io">← Back to portfolio</a></div>
+  </div>
+</footer>
+
+<script>
+function togglePhase(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>
