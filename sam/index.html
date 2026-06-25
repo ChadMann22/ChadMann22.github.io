@@ -222,6 +222,15 @@ pre { padding: 1rem; font-family: var(--mono); font-size: 12px; line-height: 1.7
 .lesson-title { font-family: var(--display); font-size: 0.95rem; font-weight: 500; color: var(--text); line-height: 1.3; }
 .lesson-body { font-size: 13px; color: var(--text2); font-weight: 300; line-height: 1.75; }
 
+/* GOVERNANCE GRID */
+.gov-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin: 2rem 0; }
+@media (max-width: 700px) { .gov-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .gov-grid { grid-template-columns: 1fr; } }
+.gov-item { background: var(--surface); padding: 1.5rem; }
+.gov-item.accent { background: var(--green-lt); }
+.gov-title { font-family: var(--mono); font-size: 11px; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.6rem; }
+.gov-desc { font-size: 13px; color: var(--text2); font-weight: 300; line-height: 1.6; }
+
 /* FOOTER */
 footer { padding: 2.25rem 0; border-top: 1px solid var(--border); }
 .footer-inner { max-width: 940px; margin: 0 auto; padding: 0 2.5rem; display: flex; align-items: center; justify-content: space-between; }
@@ -242,6 +251,7 @@ footer { padding: 2.25rem 0; border-top: 1px solid var(--border); }
     <a class="nav-back" href="https://chadmann22.github.io">← chadmann22.github.io</a>
     <ul class="nav-right">
       <li><a href="#overview">Overview</a></li>
+      <li><a href="#governance">Governance</a></li>
       <li><a href="#architecture">Architecture</a></li>
       <li><a href="#implementation">Build</a></li>
       <li><a href="#troubleshooting">Issues</a></li>
@@ -262,10 +272,11 @@ footer { padding: 2.25rem 0; border-top: 1px solid var(--border); }
     <div class="hero-type">AI Operations Project</div>
     <h1>Project Sam<br>AI Operations Framework</h1>
     <p class="hero-sub">
-      A persistent AI systems engineer built on the Hermes agent framework — iteratively 
-      developed to manage, audit, document, and maintain a Raspberry Pi home lab through 
-      documentation-first knowledge architecture, session continuity, and autonomous 
-      task execution on production infrastructure.
+      An autonomous AI systems engineer deployed against live Raspberry Pi infrastructure —
+      built around production-grade governance controls: documentation-first reasoning,
+      configuration drift detection, risk registers, decision logs, audit trails, and
+      context-optimized session continuity. The work demonstrates that reliable AI operations
+      are a governance and information architecture problem, not a model capability problem.
     </p>
     <div class="badge-row">
       <span class="badge badge-green">Hermes Agent</span>
@@ -320,10 +331,62 @@ footer { padding: 2.25rem 0; border-top: 1px solid var(--border); }
   </div>
 </section>
 
+<!-- GOVERNANCE -->
+<section id="governance">
+  <div class="wrap">
+    <div class="section-label">01 — Governance Architecture</div>
+    <h2>Operational Controls</h2>
+    <p>The core insight driving Sam's design: an AI agent without governance controls is not a reliable operations tool — it is a stateless assistant that re-investigates what it already knows, forgets decisions, and compounds mistakes across sessions. Sam implements nine discrete governance components, each addressing a specific failure mode.</p>
+
+    <div class="gov-grid">
+      <div class="gov-item accent">
+        <div class="gov-title">Operational Reasoning Framework</div>
+        <div class="gov-desc">An authority hierarchy requiring documentation to be consulted before any investigation. A mandatory reasoning summary — request type, artifacts, sources, rationale — must be produced before any audit, investigation, or change task begins.</div>
+      </div>
+      <div class="gov-item accent">
+        <div class="gov-title">Configuration Drift Detection</div>
+        <div class="gov-desc">Baseline snapshots of critical service configurations stored at session time. Before touching any service, Sam compares the live configuration against its baseline to identify what changed, when, and whether the change was documented.</div>
+      </div>
+      <div class="gov-item accent">
+        <div class="gov-title">Lazy-Loading Context Architecture</div>
+        <div class="gov-desc">Context window treated as a finite operational resource. Always-load artifacts (snapshot, tool registry, service inventory) are separated from on-demand artifacts (baselines, change history, full docs). Preserves working context for actual tasks.</div>
+      </div>
+      <div class="gov-item">
+        <div class="gov-title">Session Snapshot System</div>
+        <div class="gov-desc">Compressed operational state captured at session end and loaded at session start. Every new session — whether from a /new context reset or full container restart — begins from the same known state without any manual orientation.</div>
+      </div>
+      <div class="gov-item">
+        <div class="gov-title">Tool Registry</div>
+        <div class="gov-desc">A capability catalog mapping task types to existing skills, playbooks, and procedures. Consulted before creating anything new — prevents duplicate tools, ensures reuse of documented procedures, and eliminates improvised ad-hoc solutions.</div>
+      </div>
+      <div class="gov-item">
+        <div class="gov-title">Documentation Index</div>
+        <div class="gov-desc">A single navigation map routing operational questions to the correct authoritative source. The first file consulted before any investigation — answers "where should I look?" before any SSH connection is opened.</div>
+      </div>
+      <div class="gov-item">
+        <div class="gov-title">Operations Ledger</div>
+        <div class="gov-desc">An append-only chronological record of every action taken, every finding documented, and every change applied. Provides a complete audit trail across sessions and is consulted before re-investigating any previously examined area.</div>
+      </div>
+      <div class="gov-item">
+        <div class="gov-title">Risk Register</div>
+        <div class="gov-desc">Known operational risks with severity, mitigation status, and open/closed tracking. Survives context resets. Open items are resolvable as autonomous tasks — Sam can be assigned a risk register entry and will investigate, fix, document, and close it end-to-end.</div>
+      </div>
+      <div class="gov-item">
+        <div class="gov-title">Decision Log</div>
+        <div class="gov-desc">Durable architectural decisions with rationale, recorded at decision time and available in every subsequent session. Prevents re-debate of settled questions and ensures operational consistency even after long gaps between sessions.</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong style="color: var(--text); font-weight: 500;">Platform engineering framing:</strong> These are not AI features — they are platform engineering concepts applied to an autonomous agent. Documentation indexes, audit trails, drift detection, risk registers, and change logs are standard in production infrastructure. Sam demonstrates what it looks like to apply that same operational discipline to an AI system.
+    </div>
+  </div>
+</section>
+
 <!-- ARCHITECTURE -->
 <section id="architecture">
   <div class="wrap">
-    <div class="section-label">01 — Architecture</div>
+    <div class="section-label">02 — Architecture</div>
     <h2>Operational Knowledge Hierarchy</h2>
     <p>Before answering any operational question or beginning any task, Sam consults sources in a defined order. The hierarchy enforces documentation-first behavior and ensures live investigation is only performed when existing records are insufficient.</p>
 
@@ -456,7 +519,7 @@ footer { padding: 2.25rem 0; border-top: 1px solid var(--border); }
 <!-- IMPLEMENTATION -->
 <section id="implementation">
   <div class="wrap">
-    <div class="section-label">02 — Implementation</div>
+    <div class="section-label">03 — Implementation</div>
     <h2>Iterative Development</h2>
     <p>Sam was not deployed once and left static. Each capability was added in response to observed limitations, debugged against real behavior, and validated before moving to the next layer.</p>
 
@@ -648,7 +711,7 @@ Reason For Selection: Risk register contains the documented item.
 <!-- TROUBLESHOOTING -->
 <section id="troubleshooting">
   <div class="wrap">
-    <div class="section-label">03 — Problem Solving</div>
+    <div class="section-label">04 — Problem Solving</div>
     <h2>Troubleshooting Log</h2>
     <p>Failures encountered during development and the root causes behind them. Most were not reasoning failures — they were retrieval and configuration failures.</p>
 
@@ -706,7 +769,7 @@ Reason For Selection: Risk register contains the documented item.
 <!-- RESULTS -->
 <section id="results">
   <div class="wrap">
-    <div class="section-label">04 — Outcomes</div>
+    <div class="section-label">05 — Outcomes</div>
     <h2>Results &amp; Validation</h2>
 
     <div class="results-grid">
@@ -767,7 +830,7 @@ service inventory current. Ready to proceed.</pre>
 <!-- LESSONS LEARNED -->
 <section id="lessons">
   <div class="wrap">
-    <div class="section-label">05 — Lessons Learned</div>
+    <div class="section-label">06 — Lessons Learned</div>
     <h2>What Building Sam Taught Me</h2>
     <p>These are not abstract conclusions. Each one is traceable to a specific failure, debugging session, and architectural change made in response.</p>
 
